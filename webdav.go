@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
 
@@ -23,8 +24,12 @@ func (srv *WebDAVServer) UserDir(username string) (string, error) {
 }
 
 func (srv *WebDAVServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var userDir = "/dev/null"
 	var err error
+	userDir := "/dev/null"
+	log := log.With().
+		Str("method", r.Method).
+		Str("path", r.URL.Path).
+		Logger()
 
 	if r.Method != "OPTIONS" {
 		ok, username := srv.Authorizer.Check(r)
@@ -37,10 +42,13 @@ func (srv *WebDAVServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userDir, err = srv.UserDir(username)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Printf("ERROR: %s\n", err)
+			log.Error().Err(err).Str("userDir", userDir).Msg("Failed to create directory")
 			return
 		}
-		fmt.Printf("Signed in as %s at %s\n", username, userDir)
+		log = log.With().
+			Str("username", username).
+			Str("userDir", userDir).
+			Logger()
 	}
 
 	h := &webdav.Handler{
@@ -48,7 +56,12 @@ func (srv *WebDAVServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		FileSystem: webdav.Dir(userDir),
 		LockSystem: webdav.NewMemLS(),
 		Logger: func(r *http.Request, err error) {
-			fmt.Println(r.RemoteAddr, r.Method, r.URL, err)
+			log.Info().
+				Str("remote_addr", r.RemoteAddr).
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Err(err).
+				Msg("WebDAV request")
 		},
 	}
 	h.ServeHTTP(w, r)
