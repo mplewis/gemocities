@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mplewis/gemocities/types"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
@@ -15,6 +16,13 @@ const userDirFormat = "~%s"
 type Server struct {
 	Authorizer
 	UsersDir string
+}
+
+func BuildServer(cfg types.Config) *Server {
+	return &Server{
+		Authorizer: &DummyAuthorizer{}, // TODO
+		UsersDir:   cfg.UsersDir,
+	}
 }
 
 func (srv *Server) userDir(username string) (string, error) {

@@ -10,6 +10,7 @@ import (
 	"github.com/mplewis/figyr"
 	"github.com/mplewis/gemocities/geminis"
 	"github.com/mplewis/gemocities/types"
+	"github.com/mplewis/gemocities/webdavs"
 	"github.com/rs/zerolog/log"
 )
 
@@ -20,7 +21,7 @@ func main() {
 	figyr.MustParse(&cfg)
 	setupLogging(cfg)
 
-	davSrv := buildWebDAVServer(cfg)
+	davSrv := webdavs.BuildServer(cfg)
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
 	gemSrv, err := geminis.BuildServer(cfg)
 	if err != nil {
