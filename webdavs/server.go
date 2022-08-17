@@ -1,21 +1,24 @@
-package gemocities
+package webdavs
 
 import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
 
-type WebDAVServer struct {
+const userDirFormat = "~%s"
+
+type Server struct {
 	Authorizer
 	UsersDir string
 }
 
-func (srv *WebDAVServer) UserDir(username string) (string, error) {
-	userDir := fmt.Sprintf("%s/~%s", srv.UsersDir, username)
+func (srv *Server) userDir(username string) (string, error) {
+	userDir := path.Join(srv.UsersDir, fmt.Sprintf(userDirFormat, username))
 	err := os.MkdirAll(userDir, 0755)
 	if err != nil {
 		return "", err
@@ -23,7 +26,7 @@ func (srv *WebDAVServer) UserDir(username string) (string, error) {
 	return userDir, nil
 }
 
-func (srv *WebDAVServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var err error
 	userDir := "/dev/null"
 	log := log.With().
@@ -32,14 +35,14 @@ func (srv *WebDAVServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Logger()
 
 	if r.Method != "OPTIONS" {
-		ok, username := srv.Authorizer.Check(r)
-		if !ok {
-			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`)
+		ok, username := srv.Authorizer.AuthorizeWebDAVUser(r)
+		if !ok { // authentication required
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`)
 			return
 		}
 
-		userDir, err = srv.UserDir(username)
+		userDir, err = srv.userDir(username)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Error().Err(err).Str("userDir", userDir).Msg("Failed to create directory")
