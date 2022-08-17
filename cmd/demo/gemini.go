@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TODO: Extract gemocities.GeminiServer
 func buildGeminiServer(cfg Config) (*gemini.Server, error) {
 	certificates := &certificate.Store{}
 	certificates.Register("localhost")
@@ -19,6 +20,7 @@ func buildGeminiServer(cfg Config) (*gemini.Server, error) {
 
 	mux := &gemini.Mux{}
 	mux.Handle("/", gemini.FileServer(os.DirFS(cfg.UsersDir)))
+	// TODO: Add routes to test out the new Gemini authorization features
 
 	srv := &gemini.Server{
 		Handler:        LoggingMiddleware(mux),

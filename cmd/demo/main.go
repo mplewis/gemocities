@@ -21,6 +21,9 @@ type Config struct {
 	UsersDir       string `figyr:"required"`
 	GeminiCertsDir string `figyr:"required"`
 
+	S3Bucket    string `figyr:"required"`
+	S3Namespace string `figyr:"required"`
+
 	Development bool `figyr:"optional"`
 	Debug       bool `figyr:"optional"`
 }
