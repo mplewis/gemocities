@@ -1,18 +1,19 @@
 package main
 
 import (
-	"net/http"
+	"context"
 	"os"
 
 	"github.com/mplewis/figyr"
-	"github.com/mplewis/gemocities"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
-	Host     string `figyr:"default=:8888"`
-	UsersDir string `figyr:"required"`
+	GeminiHost     string `figyr:"default=:1965"`
+	WebDAVHost     string `figyr:"default=:8888"`
+	UsersDir       string `figyr:"required"`
+	GeminiCertsDir string `figyr:"required"`
 
 	Development bool `figyr:"optional"`
 	Debug       bool `figyr:"optional"`
@@ -33,18 +34,27 @@ func setupLogging(cfg Config) {
 	zerolog.SetGlobalLevel(logLevel)
 }
 
-func buildServer(cfg Config) *gemocities.WebDAVServer {
-	return &gemocities.WebDAVServer{
-		Authorizer: &gemocities.DummyAuthorizer{},
-		UsersDir:   cfg.UsersDir,
-	}
-}
+// func buildWebDAVServer(cfg Config) *gemocities.WebDAVServer {
+// 	return &gemocities.WebDAVServer{
+// 		Authorizer: &gemocities.DummyAuthorizer{},
+// 		UsersDir:   cfg.UsersDir,
+// 	}
+// }
 
 func main() {
 	var cfg Config
 	figyr.MustParse(&cfg)
 	setupLogging(cfg)
-	srv := buildServer(cfg)
-	log.Info().Str("host", cfg.Host).Msg("Server started")
-	http.ListenAndServe(cfg.Host, srv)
+
+	gemSrv, err := buildGeminiServer(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to build Gemini server")
+	}
+
+	// davSrv := buildWebDAVServer(cfg)
+	// log.Info().Str("host", cfg.Host).Msg("WebDAV server started")
+	// http.ListenAndServe(cfg.Host, davSrv)
+
+	log.Info().Str("host", cfg.GeminiHost).Msg("Gemini server started")
+	gemSrv.ListenAndServe(context.Background())
 }

@@ -1,0 +1,3 @@
+development: true
+users_dir: tmp/users
+gemini_certs_dir: tmp/certs
