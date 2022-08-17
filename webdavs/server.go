@@ -37,8 +37,8 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "OPTIONS" {
 		ok, username := srv.Authorizer.AuthorizeWebDAVUser(r)
 		if !ok { // authentication required
+			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`) // must come first!
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`)
 			return
 		}
 

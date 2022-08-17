@@ -1,4 +1,4 @@
-package main
+package geminis
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 
 	"git.sr.ht/~adnano/go-gemini"
 	"git.sr.ht/~adnano/go-gemini/certificate"
+	"github.com/mplewis/gemocities/types"
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: Extract gemocities.GeminiServer
-func buildGeminiServer(cfg Config) (*gemini.Server, error) {
+func BuildServer(cfg types.Config) (*gemini.Server, error) {
 	certificates := &certificate.Store{}
 	certificates.Register("localhost")
 	if err := certificates.Load(cfg.GeminiCertsDir); err != nil {
@@ -42,7 +42,8 @@ func LoggingMiddleware(h gemini.Handler) gemini.Handler {
 			Str("host", host).
 			Int("status", int(lw.Status)).
 			Int("bytes", lw.Wrote).
-			Msg(r.URL.Path)
+			Str("path", r.URL.Path).
+			Msg("Gemini request")
 	})
 }
 

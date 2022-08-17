@@ -1,6 +1,8 @@
 package webdavs
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Authorizer interface {
 	AuthorizeWebDAVUser(r *http.Request) (authorized bool, user string)
