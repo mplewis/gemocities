@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
+type CertificateHash string
+
 type User struct {
-	Created         time.Time `json:"created"`
-	CommonName      string    `json:"common_name"`
-	CertificateHash string    `json:"certificate_hash"`
-	Email           string    `json:"email"`
-	EmailVerified   bool      `json:"email_verified"`
-	WebDAVPassword  string    `json:"webdav_password"`
+	Created         time.Time       `json:"created"`
+	CertificateHash CertificateHash `json:"certificate_hash"`
+	Email           string          `json:"email"`
+	EmailVerified   bool            `json:"email_verified"`
+	WebDAVPassword  string          `json:"webdav_password"`
 }
 
 func (u *User) Serialize() ([]byte, error) {
