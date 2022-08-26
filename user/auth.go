@@ -15,25 +15,29 @@ type UserInfo struct {
 }
 
 var ErrCertMismatch = errors.New("certificate mismatch")
+var ErrNoUsername = errors.New("user has no username")
 
-func (m *Manager) AuthorizeWebDAVUser(r *http.Request) (bool, string, error) {
+func (m *Manager) AuthorizeWebDAVUser(r *http.Request) (bool, User, error) {
 	username, password, ok := r.BasicAuth()
 	if !ok {
-		return false, "", nil
+		return false, User{}, nil
 	}
 
 	user, found, err := m.Get(CertificateHash(username))
 	if err != nil {
-		return false, "", err
+		return false, User{}, err
 	}
 	if !found {
-		return false, "", nil
+		return false, User{}, nil
+	}
+	if user.Name == "" {
+		return false, User{}, ErrNoUsername
 	}
 
 	if password != user.WebDAVPassword {
-		return false, "", nil
+		return false, User{}, nil
 	}
-	return true, username, nil
+	return true, user, nil
 }
 
 func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {

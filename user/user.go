@@ -12,6 +12,7 @@ type User struct {
 	CertificateHash CertificateHash `json:"certificate_hash"`
 	Email           string          `json:"email"`
 	EmailVerified   bool            `json:"email_verified"`
+	Name            string          `json:"name"`
 	WebDAVPassword  string          `json:"webdav_password"`
 }
 

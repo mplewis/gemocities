@@ -1,18 +1,13 @@
 package webdavs
 
 import (
-	"fmt"
 	"net/http"
-	"os"
-	"path"
 
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
-
-const userDirFormat = "~%s"
 
 type Server struct {
 	Authorizer
@@ -26,15 +21,6 @@ func BuildServer(cfg types.Config, mgr *user.Manager) *Server {
 	}
 }
 
-func (srv *Server) userDir(username string) (string, error) {
-	userDir := path.Join(srv.UsersDir, fmt.Sprintf(userDirFormat, username))
-	err := os.MkdirAll(userDir, 0755)
-	if err != nil {
-		return "", err
-	}
-	return userDir, nil
-}
-
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var err error
 	userDir := "/dev/null"
@@ -46,6 +32,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "OPTIONS" {
 		ok, user, error := srv.Authorizer.AuthorizeWebDAVUser(r)
 		if error != nil {
+			log.Error().Err(error).Msg("Failed to authorize user")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -55,14 +42,14 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		userDir, err = srv.userDir(username)
+		userDir, err = srv.userDir(user.Name)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Error().Err(err).Str("userDir", userDir).Msg("Failed to create directory")
 			return
 		}
 		log = log.With().
-			Str("username", username).
+			Str("username", user.Name).
 			Str("userDir", userDir).
 			Logger()
 	}
