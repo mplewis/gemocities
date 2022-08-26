@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/mplewis/gemocities/types"
+	"github.com/mplewis/gemocities/user"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
@@ -18,9 +19,9 @@ type Server struct {
 	UsersDir string
 }
 
-func BuildServer(cfg types.Config) *Server {
+func BuildServer(cfg types.Config, mgr *user.Manager) *Server {
 	return &Server{
-		Authorizer: &DummyAuthorizer{}, // TODO
+		Authorizer: mgr,
 		UsersDir:   cfg.UsersDir,
 	}
 }
@@ -43,7 +44,11 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Logger()
 
 	if r.Method != "OPTIONS" {
-		ok, username := srv.Authorizer.AuthorizeWebDAVUser(r)
+		ok, user, error := srv.Authorizer.AuthorizeWebDAVUser(r)
+		if error != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		if !ok { // authentication required
 			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`) // must come first!
 			w.WriteHeader(http.StatusUnauthorized)

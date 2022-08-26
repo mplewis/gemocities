@@ -56,6 +56,6 @@ func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {
 	}
 
 	info.HasUser = true
-	info.User = *user
+	info.User = user
 	return info, nil
 }

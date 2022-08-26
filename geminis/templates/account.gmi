@@ -1,0 +1,18 @@
+# Account
+
+Email address: {{ .Info.User.Email }}
+
+{{ if not .Info.User.EmailVerified }}
+Your email address has not been verified.
+=> /accounts/verify DEV: Force verify now
+{{ else }}
+Your email address has been verified.
+
+Sign into WebDAV with the following credentials to upload files:
+
+WebDAV username:
+{{ .Info.User.CertificateHash }}
+
+WebDAV password:
+{{ .Info.User.WebDAVPassword }}
+{{ end }}

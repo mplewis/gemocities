@@ -39,6 +39,86 @@ func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
 				w.WriteHeader(gemini.StatusTemporaryFailure, "Failed to render template")
 			}
 		}),
+
+		router.NewMustRoute("/account", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
+			info, err := mgr.AuthorizeGeminiUser(rq.Raw)
+			if err != nil {
+				w.WriteHeader(gemini.StatusBadRequest, err.Error())
+				return
+			}
+			if !info.HasCertificate {
+				w.WriteHeader(gemini.StatusCertificateRequired, "")
+				return
+			}
+
+			tn := "account"
+			if !info.HasUser {
+				tn = "register"
+			}
+
+			data := struct{ Info user.UserInfo }{Info: info}
+			err = tpls.Render(w, tn, data)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to render template")
+				w.WriteHeader(gemini.StatusTemporaryFailure, "Failed to render template")
+			}
+		}),
+
+		router.NewMustRoute("/accounts/create", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
+			info, err := mgr.AuthorizeGeminiUser(rq.Raw)
+			if err != nil {
+				w.WriteHeader(gemini.StatusBadRequest, err.Error())
+				return
+			}
+			if !info.HasCertificate {
+				w.WriteHeader(gemini.StatusCertificateRequired, "")
+				return
+			}
+
+			if info.HasUser {
+				w.WriteHeader(gemini.StatusRedirect, "/account")
+				return
+			}
+
+			if len(rq.QueryParams) == 0 {
+				w.WriteHeader(gemini.StatusInput, "Enter your email address:")
+				return
+			}
+			var email string
+			for k := range rq.QueryParams {
+				email = k
+				break
+			}
+
+			err = mgr.Create(user.NewUserArgs{Email: email, CertificateHash: info.CertificateHash})
+			if err != nil {
+				w.WriteHeader(gemini.StatusTemporaryFailure, err.Error())
+				return
+			}
+			w.WriteHeader(gemini.StatusRedirect, "/account")
+		}),
+
+		router.NewMustRoute("/accounts/verify", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
+			info, err := mgr.AuthorizeGeminiUser(rq.Raw)
+			if err != nil {
+				w.WriteHeader(gemini.StatusBadRequest, err.Error())
+				return
+			}
+			if !info.HasCertificate {
+				w.WriteHeader(gemini.StatusCertificateRequired, "")
+				return
+			}
+			if !info.HasUser {
+				w.WriteHeader(gemini.StatusRedirect, "/account")
+				return
+			}
+
+			if err = mgr.Verify(info.User); err != nil {
+				w.WriteHeader(gemini.StatusTemporaryFailure, err.Error())
+				return
+			}
+			w.WriteHeader(gemini.StatusRedirect, "/account")
+		}),
 	)
 
 	handler := gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {

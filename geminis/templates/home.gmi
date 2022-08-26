@@ -2,6 +2,4 @@
 
 This is the home page.
 
-```
-{{ .Info -}}
-```
+=> account Manage my account

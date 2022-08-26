@@ -23,9 +23,9 @@ func main() {
 	figyr.MustParse(&cfg)
 	setupLogging(cfg)
 
-	davSrv := webdavs.BuildServer(cfg)
+	mgr := &user.Manager{Store: ez3.NewFS("tmp/db")}
+	davSrv := webdavs.BuildServer(cfg, mgr)
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
-	mgr := &user.Manager{Store: ez3.NewMemory()}
 	gemSrv, err := geminis.BuildServer(cfg, mgr)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to build Gemini server")

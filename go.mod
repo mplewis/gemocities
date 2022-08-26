@@ -2,6 +2,8 @@ module github.com/mplewis/gemocities
 
 go 1.19
 
+replace github.com/mplewis/ez3 => ../ez3
+
 require (
 	git.sr.ht/~adnano/go-gemini v0.2.3
 	github.com/davecgh/go-spew v1.1.1

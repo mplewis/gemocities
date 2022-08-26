@@ -16,20 +16,20 @@ type NewUserArgs struct {
 	Email string
 }
 
-func (m *Manager) Get(ch CertificateHash) (*User, bool, error) {
+func (m *Manager) Get(ch CertificateHash) (User, bool, error) {
 	user := &User{}
 	err := m.Store.Get(string(ch), user)
 	if errors.Is(err, ez3.KeyNotFound) {
-		return nil, false, nil
+		return User{}, false, nil
 	}
 	if err != nil {
-		return nil, false, err
+		return User{}, false, err
 	}
-	return user, true, nil
+	return *user, true, nil
 }
 
-func (m *Manager) Set(user *User) error {
-	return m.Store.Set(string(user.CertificateHash), user)
+func (m *Manager) Set(user User) error {
+	return m.Store.Set(string(user.CertificateHash), &user)
 }
 
 func (m *Manager) Create(args NewUserArgs) error {
@@ -44,7 +44,7 @@ func (m *Manager) Create(args NewUserArgs) error {
 	if err != nil {
 		return err
 	}
-	return m.Set(&User{
+	return m.Set(User{
 		Created:         time.Now(),
 		EmailVerified:   false,
 		CertificateHash: args.CertificateHash,
@@ -53,11 +53,16 @@ func (m *Manager) Create(args NewUserArgs) error {
 	})
 }
 
-func (m *Manager) ChangePassword(user *User) error {
+func (m *Manager) ChangePassword(user User) error {
 	password, err := generatePassword()
 	if err != nil {
 		return err
 	}
 	user.WebDAVPassword = password
+	return m.Set(user)
+}
+
+func (m *Manager) Verify(user User) error {
+	user.EmailVerified = true
 	return m.Set(user)
 }
