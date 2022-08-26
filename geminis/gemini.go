@@ -12,6 +12,7 @@ import (
 	"github.com/mplewis/gemocities/router"
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
+	"github.com/rs/zerolog/log"
 )
 
 func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
@@ -21,6 +22,7 @@ func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
 		return nil, err
 	}
 
+	tpls := &TemplateCache{}
 	fs := gemini.FileServer(os.DirFS(cfg.UsersDir))
 	rt := router.NewRouter(
 		router.NewMustRoute("/", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
@@ -30,9 +32,12 @@ func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
 				return
 			}
 
-			w.Write([]byte("```\n"))
-			spew.Fdump(w, info)
-			w.Write([]byte("\n```"))
+			data := struct{ Info string }{Info: spew.Sdump(info)}
+			err = tpls.Render(w, "home", data)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to render template")
+				w.WriteHeader(gemini.StatusTemporaryFailure, "Failed to render template")
+			}
 		}),
 	)
 
