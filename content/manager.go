@@ -1,13 +1,18 @@
 package content
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 
 	"golang.org/x/net/webdav"
 )
+
+//go:embed templates/*
+var templateFS embed.FS
 
 // ErrNotADirectory is returned when something exists at a user directory location that is not a directory.
 var ErrNotADirectory = errors.New("user directory is not a directory")
@@ -53,7 +58,19 @@ func (m *Manager) Create(username string) error {
 	if exists {
 		return ErrAlreadyExists
 	}
-	return os.Mkdir(m.UserDir(username), 0700)
+	err = os.Mkdir(m.UserDir(username), 0700)
+	if err != nil {
+		return err
+	}
+	data, err := templateFS.ReadFile(path.Join("templates", "index.gmi"))
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(path.Join(m.UserDir(username), "index.gmi"), data, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Rename renames a user directory.

@@ -1,0 +1,5 @@
+# Welcome to Gemocities!
+
+This is your new user directory. You can upload files via WebDAV to replace this with your own content.
+
+=> /account View my WebDAV credentials
