@@ -23,6 +23,7 @@ type Request struct {
 	Raw         *gemini.Request
 	PathParams  Params
 	QueryParams Params
+	RawQuery    string
 }
 
 func NewRouter(routes ...Route) Router {
@@ -44,13 +45,20 @@ func (r Router) ServeGemini(ctx context.Context, w gemini.ResponseWriter, rq *ge
 	}
 
 	if !found {
-		w.WriteHeader(gemini.StatusNotFound, "path not found")
+		w.WriteHeader(gemini.StatusNotFound, "")
+		return
+	}
+
+	rawq, err := url.QueryUnescape(rq.URL.RawQuery)
+	if err != nil {
+		w.WriteHeader(gemini.StatusBadRequest, "Could not unescape query")
 		return
 	}
 
 	route.handler(ctx, w, Request{
 		PathParams:  pathParams,
 		QueryParams: flattenQueryParams(rq.URL.Query()),
+		RawQuery:    rawq,
 		Raw:         rq,
 	})
 }
