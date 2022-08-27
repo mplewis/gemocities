@@ -11,9 +11,10 @@ type Manager struct {
 	Store ez3.EZ3
 }
 
-type NewUserArgs struct {
+type NewArgs struct {
 	CertificateHash
-	Email string
+	Email    string
+	Username string
 }
 
 func (m *Manager) Get(ch CertificateHash) (User, bool, error) {
@@ -32,7 +33,7 @@ func (m *Manager) Set(user User) error {
 	return m.Store.Set(string(user.CertificateHash), &user)
 }
 
-func (m *Manager) Create(args NewUserArgs) error {
+func (m *Manager) Create(args NewArgs) error {
 	_, found, err := m.Get(args.CertificateHash)
 	if err != nil {
 		return err

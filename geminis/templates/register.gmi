@@ -4,8 +4,8 @@ Your client certificate is not yet associated with a Gemocities account.
 
 (Certificate hash: {{ .Info.CertificateHash }})
 
-To create an account, you will need an email address.
+To register an account, you need to provide an email address and select a username.
 
-Once you create your account, you will need to verify your email address within 72 hours or your account will be deleted.
+Once you register your account, you will need to verify your email address within 72 hours or your account will be deleted.
 
-=> /accounts/create Create my account now
+=> /accounts/register Register my account now
