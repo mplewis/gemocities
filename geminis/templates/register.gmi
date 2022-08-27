@@ -8,4 +8,4 @@ To register an account, you need to provide an email address and select a userna
 
 Once you register your account, you will need to verify your email address within 72 hours or your account will be deleted.
 
-=> /accounts/register Register my account now
+=> /account/register Register my account now

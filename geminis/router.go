@@ -2,6 +2,8 @@ package geminis
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 
 	"git.sr.ht/~adnano/go-gemini"
 	"github.com/mplewis/gemocities/router"
@@ -9,8 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: Middleware
-// TODO: Enable setting user name
+// unEmailMatcher extracts the username and email address from strings of the format "swordfish:me@example.com".
+var unEmailMatcher = regexp.MustCompile(`^([^:]+):([^@]+@[^.]+\..+)$`)
 
 func buildRouter(mgr *user.Manager) router.Router {
 	tpls := &TemplateCache{}
@@ -42,11 +44,20 @@ func buildRouter(mgr *user.Manager) router.Router {
 		})),
 
 		router.NewMustRoute("/account/register", RequireCertWare(mgr, func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
-			if len(rq.QueryParams) == 0 {
-
+			prompt := "Enter your desired username and email address, separated by a colon. Example: myusername:myemail@gmail.com"
+			if rq.RawQuery == "" {
+				w.WriteHeader(gemini.StatusInput, prompt)
+				return
 			}
-			// TODO: Set email
-			// TODO: Set username
+			matches := unEmailMatcher.FindStringSubmatch(rq.RawQuery)
+			if matches == nil {
+				w.WriteHeader(gemini.StatusInput, fmt.Sprintf("Could not parse input. Please try again. %s", prompt))
+				return
+			}
+
+			username := matches[1]
+			email := matches[2]
+			fmt.Fprintf(w, "Creating user %s with email %s", username, email)
 		})),
 	)
 }

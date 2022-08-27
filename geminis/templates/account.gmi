@@ -4,7 +4,7 @@ Email address: {{ .Info.User.Email }}
 
 {{ if not .Info.User.EmailVerified }}
 Your email address has not been verified.
-=> /accounts/verify DEV: Force verify now
+=> /account/verify DEV: Force verify now
 {{ else }}
 Your email address has been verified.
 
