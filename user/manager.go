@@ -45,12 +45,18 @@ func (m *Manager) Create(args NewArgs) error {
 	if err != nil {
 		return err
 	}
+	token, err := generatePassword()
+	if err != nil {
+		return err
+	}
 	return m.Set(User{
-		Created:         time.Now(),
-		EmailVerified:   false,
-		CertificateHash: args.CertificateHash,
-		Email:           args.Email,
-		WebDAVPassword:  password,
+		Created:           time.Now(),
+		Name:              args.Username,
+		EmailVerified:     false,
+		CertificateHash:   args.CertificateHash,
+		Email:             args.Email,
+		WebDAVPassword:    password,
+		VerificationToken: token,
 	})
 }
 

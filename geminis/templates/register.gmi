@@ -2,8 +2,6 @@
 
 Your client certificate is not yet associated with a Gemocities account.
 
-(Certificate hash: {{ .Info.CertificateHash }})
-
 To register an account, you need to provide an email address and select a username.
 
 Once you register your account, you will need to verify your email address within 72 hours or your account will be deleted.

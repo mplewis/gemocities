@@ -4,7 +4,7 @@ Email address: {{ .Info.User.Email }}
 
 {{ if not .Info.User.EmailVerified }}
 Your email address has not been verified.
-=> /account/verify DEV: Force verify now
+=> /account/verify?username={{ .Info.User.Name }}&token={{ .Info.User.VerificationToken }} DEV: Force verify now
 {{ else }}
 Your email address has been verified.
 
