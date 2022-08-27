@@ -20,7 +20,7 @@ func BuildServer(cfg types.Config, umgr *user.Manager, cmgr *content.Manager) (*
 		return nil, err
 	}
 
-	fs := gemini.FileServer(os.DirFS(cfg.UsersDir))
+	fs := gemini.FileServer(os.DirFS(cfg.ContentDir))
 	rt := buildRouter(umgr, cmgr)
 
 	handler := gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {

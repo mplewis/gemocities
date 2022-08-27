@@ -7,6 +7,8 @@ import (
 	"github.com/mplewis/ez3"
 )
 
+var ErrInvalidToken = errors.New("invalid token")
+
 type Manager struct {
 	Store ez3.EZ3
 }
@@ -69,7 +71,10 @@ func (m *Manager) ChangePassword(user User) error {
 	return m.Set(user)
 }
 
-func (m *Manager) Verify(user User) error {
+func (m *Manager) Verify(user User, token string) error {
+	if user.VerificationToken != token {
+		return ErrInvalidToken
+	}
 	user.EmailVerified = true
 	return m.Set(user)
 }

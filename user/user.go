@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -23,4 +24,8 @@ func (u *User) Serialize() ([]byte, error) {
 
 func (u *User) Deserialize(data []byte) error {
 	return json.Unmarshal(data, u)
+}
+
+func (u User) PublicURL() string {
+	return fmt.Sprintf("/~%s/", u.Name)
 }

@@ -25,7 +25,7 @@ func main() {
 	setupLogging(cfg)
 
 	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
-	cmgr := &content.Manager{Dir: "tmp/content"}
+	cmgr := &content.Manager{Dir: cfg.ContentDir}
 	davSrv := webdavs.BuildServer(cfg, umgr, cmgr)
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
 	gemSrv, err := geminis.BuildServer(cfg, umgr, cmgr)

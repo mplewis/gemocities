@@ -1,5 +1,5 @@
 development: true
-users_dir: tmp/users
+content_dir: tmp/content
 gemini_certs_dir: tmp/certs
 s3_bucket: mplewis-demo
 s3_namespace: gemocities_dev

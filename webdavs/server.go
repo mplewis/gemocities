@@ -13,14 +13,14 @@ import (
 type Server struct {
 	Authorizer
 	ContentManager *content.Manager
-	UsersDir       string
+	ContentDir     string
 }
 
 func BuildServer(cfg types.Config, umgr *user.Manager, cmgr *content.Manager) *Server {
 	return &Server{
 		Authorizer:     umgr,
 		ContentManager: cmgr,
-		UsersDir:       cfg.UsersDir,
+		ContentDir:     cfg.ContentDir,
 	}
 }
 

@@ -1,12 +1,13 @@
 # Account
 
 Email address: {{ .Info.User.Email }}
-
 {{ if not .Info.User.EmailVerified }}
 Your email address has not been verified.
-=> /account/verify?username={{ .Info.User.Name }}&token={{ .Info.User.VerificationToken }} DEV: Force verify now
+You must verify your email before uploading files to your user directory.
+
+=> /account/verify?token={{ .Info.User.VerificationToken }} DEV: Force verify now
 {{ else }}
-Your email address has been verified.
+=> {{ .Info.User.PublicURL }} View my page at {{ .Info.User.PublicURL }}
 
 Sign into WebDAV with the following credentials to upload files:
 

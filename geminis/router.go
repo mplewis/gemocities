@@ -116,5 +116,24 @@ func buildRouter(umgr *user.Manager, cmgr *content.Manager) router.Router {
 			}
 			w.WriteHeader(gemini.StatusRedirect, "/account")
 		})),
+
+		router.NewMustRoute("/account/verify", RequireUserWare(umgr, func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
+			user, _ := GetUser(ctx)
+			if user.EmailVerified {
+				w.WriteHeader(gemini.StatusRedirect, "/account")
+				return
+			}
+			token, ok := rq.QueryParams["token"]
+			if !ok {
+				w.WriteHeader(gemini.StatusBadRequest, "missing verification token")
+				return
+			}
+			err := umgr.Verify(user, token)
+			if err != nil {
+				w.WriteHeader(gemini.StatusBadRequest, "invalid verification token")
+				return
+			}
+			w.WriteHeader(gemini.StatusRedirect, "/account")
+		})),
 	)
 }
