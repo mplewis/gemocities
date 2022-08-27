@@ -3,6 +3,7 @@ package webdavs
 import (
 	"net/http"
 
+	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
 	"github.com/rs/zerolog/log"
@@ -11,53 +12,75 @@ import (
 
 type Server struct {
 	Authorizer
-	UsersDir string
+	ContentManager *content.Manager
+	UsersDir       string
 }
 
-func BuildServer(cfg types.Config, mgr *user.Manager) *Server {
+func BuildServer(cfg types.Config, umgr *user.Manager, cmgr *content.Manager) *Server {
 	return &Server{
-		Authorizer: mgr,
-		UsersDir:   cfg.UsersDir,
+		Authorizer:     umgr,
+		ContentManager: cmgr,
+		UsersDir:       cfg.UsersDir,
 	}
 }
 
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var err error
-	userDir := "/dev/null"
 	log := log.With().
 		Str("method", r.Method).
 		Str("path", r.URL.Path).
 		Logger()
 
-	if r.Method != "OPTIONS" {
-		ok, user, error := srv.Authorizer.AuthorizeWebDAVUser(r)
-		if error != nil {
-			log.Error().Err(error).Msg("Failed to authorize user")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+	if r.Method == "OPTIONS" {
+		h := &webdav.Handler{
+			Prefix:     "/",
+			FileSystem: webdav.Dir("/dev/null"),
+			LockSystem: webdav.NewMemLS(), // TODO: Replace with stub
+			Logger: func(r *http.Request, err error) {
+				log.Info().
+					Str("remote_addr", r.RemoteAddr).
+					Str("method", r.Method).
+					Str("path", r.URL.Path).
+					Err(err).
+					Msg("WebDAV request")
+			},
 		}
-		if !ok { // authentication required
-			w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`) // must come first!
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		h.ServeHTTP(w, r)
+		return
+	}
 
-		userDir, err = srv.userDir(user.Name)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Error().Err(err).Str("userDir", userDir).Msg("Failed to create directory")
-			return
-		}
-		log = log.With().
-			Str("username", user.Name).
-			Str("userDir", userDir).
-			Logger()
+	authorized, user, err := srv.Authorizer.AuthorizeWebDAVUser(r)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to authorize user")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !authorized {
+		w.Header().Set("WWW-Authenticate", `Basic realm="BASIC WebDAV REALM"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	log = log.With().
+		Str("user", user.Name).
+		Str("cert_hash", string(user.CertificateHash)).
+		Logger()
+
+	exist, err := srv.ContentManager.Exists(user.Name)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to check if user directory exists")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !exist {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	h := &webdav.Handler{
 		Prefix:     "/",
-		FileSystem: webdav.Dir(userDir),
-		LockSystem: webdav.NewMemLS(),
+		FileSystem: srv.ContentManager.WebDAVDirFor(user.Name),
+		LockSystem: webdav.NewMemLS(), // TODO: Replace with stub
 		Logger: func(r *http.Request, err error) {
 			log.Info().
 				Str("remote_addr", r.RemoteAddr).

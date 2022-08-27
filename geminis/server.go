@@ -8,11 +8,12 @@ import (
 
 	"git.sr.ht/~adnano/go-gemini"
 	"git.sr.ht/~adnano/go-gemini/certificate"
+	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
 )
 
-func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
+func BuildServer(cfg types.Config, umgr *user.Manager, cmgr *content.Manager) (*gemini.Server, error) {
 	certificates := &certificate.Store{}
 	certificates.Register("localhost")
 	if err := certificates.Load(cfg.GeminiCertsDir); err != nil {
@@ -20,7 +21,7 @@ func BuildServer(cfg types.Config, mgr *user.Manager) (*gemini.Server, error) {
 	}
 
 	fs := gemini.FileServer(os.DirFS(cfg.UsersDir))
-	rt := buildRouter(mgr)
+	rt := buildRouter(umgr, cmgr)
 
 	handler := gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		if strings.HasPrefix(r.URL.Path, "/~") {

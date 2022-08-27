@@ -30,6 +30,9 @@ func (m *Manager) AuthorizeWebDAVUser(r *http.Request) (bool, User, error) {
 	if !found {
 		return false, User{}, nil
 	}
+	if !user.EmailVerified {
+		return false, User{}, nil
+	}
 	if user.Name == "" {
 		return false, User{}, ErrNoUsername
 	}

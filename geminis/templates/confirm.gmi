@@ -1,0 +1,11 @@
+# Confirm Registration
+
+Please confirm your new account details:
+
+Username: {{ .Username }}
+Email address: {{ .Email }}
+
+This account will be associated with your current client certificate. You will be required to confirm your email address within 72 hours.
+
+=> /account/register/confirm?username={{ .Username }}&email={{ .Email }} Confirm and register
+=> /account Cancel

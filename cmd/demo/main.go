@@ -9,6 +9,7 @@ import (
 
 	"github.com/mplewis/ez3"
 	"github.com/mplewis/figyr"
+	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/geminis"
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
@@ -23,10 +24,11 @@ func main() {
 	figyr.MustParse(&cfg)
 	setupLogging(cfg)
 
-	mgr := &user.Manager{Store: ez3.NewFS("tmp/db")}
-	davSrv := webdavs.BuildServer(cfg, mgr)
+	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
+	cmgr := &content.Manager{Dir: "tmp/content"}
+	davSrv := webdavs.BuildServer(cfg, umgr, cmgr)
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
-	gemSrv, err := geminis.BuildServer(cfg, mgr)
+	gemSrv, err := geminis.BuildServer(cfg, umgr, cmgr)
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to build Gemini server")
 	}
