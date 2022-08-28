@@ -1,8 +1,6 @@
 package gemocities_test
 
 import (
-	"context"
-	"net/url"
 	"os"
 	"testing"
 
@@ -22,7 +20,6 @@ func TestGemocities(t *testing.T) {
 
 var _ = Describe("Gemocities", func() {
 	It("passes a basic request test", func() {
-		ctx := context.Background()
 		contentDir, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 		defer os.RemoveAll(contentDir)
@@ -32,18 +29,13 @@ var _ = Describe("Gemocities", func() {
 
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			GeminiHost:     ":1965",
 			UserManager:    umgr,
 			ContentManager: cmgr,
 			ContentDir:     contentDir,
 		})
 		Expect(err).ToNot(HaveOccurred())
 
-		u, err := url.Parse("/")
-		Expect(err).ToNot(HaveOccurred())
-		req := gemini.Request{URL: u}
-		var resp ResponseBuffer
-		gemSrv.Handler.ServeGemini(ctx, &resp, &req)
+		resp := Request(gemSrv, "/", nil)
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("This is the home page"))
 	})
