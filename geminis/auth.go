@@ -12,6 +12,8 @@ import (
 type UserInfoKey struct{}
 type UserKey struct{}
 
+// TODO: Middleware includes cert and user details in logger
+
 func RequireCertWare(mgr *user.Manager, next router.RouteFunction) router.RouteFunction {
 	return func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
 		info, err := mgr.AuthorizeGeminiUser(rq.Raw)

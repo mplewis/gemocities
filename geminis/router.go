@@ -19,6 +19,8 @@ var unEmailMatcher = regexp.MustCompile(`^([A-Za-z0-9-_]+):([^@]+@[^.]+\..+)$`)
 // usernameMatcher extracts only valid usernames.
 var usernameMatcher = regexp.MustCompile(`^[A-Za-z0-9-_]+$`)
 
+// TODO: Break out routes into route builders
+
 func buildRouter(umgr *user.Manager, cmgr *content.Manager) router.Router {
 	tpls := &TemplateCache{}
 	render := func(w gemini.ResponseWriter, tplName string, data any) {

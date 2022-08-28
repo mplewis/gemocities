@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/mplewis/gemocities/content"
-	"github.com/mplewis/gemocities/types"
-	"github.com/mplewis/gemocities/user"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/webdav"
 )
@@ -14,14 +12,6 @@ type Server struct {
 	Authorizer
 	ContentManager *content.Manager
 	ContentDir     string
-}
-
-func BuildServer(cfg types.Config, umgr *user.Manager, cmgr *content.Manager) *Server {
-	return &Server{
-		Authorizer:     umgr,
-		ContentManager: cmgr,
-		ContentDir:     cfg.ContentDir,
-	}
 }
 
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

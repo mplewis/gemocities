@@ -26,9 +26,15 @@ func main() {
 
 	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
 	cmgr := &content.Manager{Dir: cfg.ContentDir}
-	davSrv := webdavs.BuildServer(cfg, umgr, cmgr)
+	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
-	gemSrv, err := geminis.BuildServer(cfg, umgr, cmgr)
+	gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
+		UserManager:    umgr,
+		ContentManager: cmgr,
+		GeminiCertsDir: cfg.GeminiCertsDir,
+		ContentDir:     cfg.ContentDir,
+		GeminiHost:     cfg.GeminiHost,
+	})
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to build Gemini server")
 	}
