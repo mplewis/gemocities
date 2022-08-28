@@ -1,6 +1,7 @@
 package user
 
 import (
+	"crypto/x509"
 	"errors"
 	"net/http"
 
@@ -46,11 +47,10 @@ func (m *Manager) AuthorizeWebDAVUser(r *http.Request) (bool, User, error) {
 func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {
 	info := UserInfo{}
 
-	tls := r.TLS()
-	if tls == nil || len(tls.PeerCertificates) == 0 {
+	cert := m.getCert(r)
+	if cert == nil {
 		return info, nil
 	}
-	cert := tls.PeerCertificates[0]
 	info.HasCertificate = true
 	info.CertificateHash = HashCertificate(cert)
 
@@ -65,4 +65,20 @@ func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {
 	info.HasUser = true
 	info.User = user
 	return info, nil
+}
+
+func (m *Manager) getCert(r *gemini.Request) *x509.Certificate {
+	tls := r.TLS()
+	if tls != nil && len(tls.PeerCertificates) == 0 {
+		return tls.PeerCertificates[0]
+	}
+
+	if m.TestMode {
+		// HACK: enables injection of certs during tests
+		if r.Certificate != nil {
+			return r.Certificate.Leaf
+		}
+	}
+
+	return nil
 }

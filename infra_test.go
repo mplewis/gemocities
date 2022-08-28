@@ -3,10 +3,13 @@ package gemocities_test
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	neturl "net/url"
 
 	"git.sr.ht/~adnano/go-gemini"
 )
+
+var clientCerts *tls.Certificate
 
 type ResponseBuffer struct {
 	Data      []byte
@@ -48,4 +51,20 @@ func (r Requestor) Request(url string, cert *tls.Certificate) ResponseBuffer {
 	var resp ResponseBuffer
 	r.Server.Handler.ServeGemini(context.Background(), &resp, &req)
 	return resp
+}
+
+func ClientCerts() *tls.Certificate {
+	if clientCerts == nil {
+		cert, err := tls.LoadX509KeyPair("test/certs/test_user.crt", "test/certs/test_user.key")
+		if err != nil {
+			panic(err)
+		}
+		raw := cert.Certificate[0]
+		cert.Leaf, err = x509.ParseCertificate(raw)
+		if err != nil {
+			panic(err)
+		}
+		clientCerts = &cert
+	}
+	return clientCerts
 }

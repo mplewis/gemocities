@@ -31,7 +31,7 @@ var _ = Describe("server", func() {
 		contentDir = cd
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			UserManager:    &user.Manager{Store: ez3.NewMemory()},
+			UserManager:    &user.Manager{Store: ez3.NewMemory(), TestMode: true},
 			ContentManager: &content.Manager{Dir: contentDir},
 			ContentDir:     contentDir,
 		})
@@ -52,5 +52,11 @@ var _ = Describe("server", func() {
 	It("requires certs for the account page", func() {
 		resp := rq.Request("/account", nil)
 		Expect(resp.Status).To(Equal(gemini.StatusCertificateRequired))
+	})
+
+	It("prompts new users to set up their account", func() {
+		resp := rq.Request("/account", ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+		Expect(resp.Body()).To(ContainSubstring("client certificate is not yet associated"))
 	})
 })

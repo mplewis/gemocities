@@ -10,7 +10,8 @@ import (
 var ErrInvalidToken = errors.New("invalid token")
 
 type Manager struct {
-	Store ez3.EZ3
+	Store    ez3.EZ3
+	TestMode bool // enables an alternate client cert parsing path
 }
 
 type NewArgs struct {
