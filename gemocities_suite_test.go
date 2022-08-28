@@ -11,6 +11,7 @@ import (
 	"github.com/mplewis/gemocities/user"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/rs/zerolog"
 )
 
 func TestGemocities(t *testing.T) {
@@ -23,6 +24,8 @@ var _ = Describe("server", func() {
 	var rq Requestor
 
 	BeforeEach(func() {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel) // HACK
+
 		cd, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 		contentDir = cd
@@ -44,5 +47,10 @@ var _ = Describe("server", func() {
 		resp := rq.Request("/", nil)
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("This is the home page"))
+	})
+
+	It("requires certs for the account page", func() {
+		resp := rq.Request("/account", nil)
+		Expect(resp.Status).To(Equal(gemini.StatusCertificateRequired))
 	})
 })

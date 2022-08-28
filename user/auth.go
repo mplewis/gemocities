@@ -47,7 +47,7 @@ func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {
 	info := UserInfo{}
 
 	tls := r.TLS()
-	if len(tls.PeerCertificates) == 0 {
+	if tls == nil || len(tls.PeerCertificates) == 0 {
 		return info, nil
 	}
 	cert := tls.PeerCertificates[0]
