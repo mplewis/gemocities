@@ -35,13 +35,17 @@ func (r *ResponseBuffer) Body() string {
 
 func (r *ResponseBuffer) Flush() error { return nil }
 
-func Request(srv *gemini.Server, url string, cert *tls.Certificate) ResponseBuffer {
+type Requestor struct {
+	*gemini.Server
+}
+
+func (r Requestor) Request(url string, cert *tls.Certificate) ResponseBuffer {
 	u, err := neturl.Parse(url)
 	if err != nil {
 		panic(err)
 	}
 	req := gemini.Request{URL: u, Certificate: cert}
 	var resp ResponseBuffer
-	srv.Handler.ServeGemini(context.Background(), &resp, &req)
+	r.Server.Handler.ServeGemini(context.Background(), &resp, &req)
 	return resp
 }

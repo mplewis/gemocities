@@ -18,24 +18,30 @@ func TestGemocities(t *testing.T) {
 	RunSpecs(t, "Gemocities Suite")
 }
 
-var _ = Describe("Gemocities", func() {
-	It("passes a basic request test", func() {
-		contentDir, err := os.MkdirTemp("", "")
+var _ = Describe("server", func() {
+	var contentDir string
+	var rq Requestor
+
+	BeforeEach(func() {
+		cd, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
-		defer os.RemoveAll(contentDir)
-
-		umgr := &user.Manager{Store: ez3.NewMemory()}
-		cmgr := &content.Manager{Dir: contentDir}
-
+		contentDir = cd
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			UserManager:    umgr,
-			ContentManager: cmgr,
+			UserManager:    &user.Manager{Store: ez3.NewMemory()},
+			ContentManager: &content.Manager{Dir: contentDir},
 			ContentDir:     contentDir,
 		})
 		Expect(err).ToNot(HaveOccurred())
+		rq = Requestor{gemSrv}
+	})
 
-		resp := Request(gemSrv, "/", nil)
+	AfterEach(func() {
+		os.RemoveAll(contentDir)
+	})
+
+	It("presents the home page", func() {
+		resp := rq.Request("/", nil)
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("This is the home page"))
 	})
