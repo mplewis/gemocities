@@ -4,12 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	neturl "net/url"
+	"regexp"
 
 	"git.sr.ht/~adnano/go-gemini"
 )
 
 var clientCerts *tls.Certificate
+var linkMatcher = regexp.MustCompile(`(?m)^=>\s*([^\s]+)\s+(.+)$`)
 
 type ResponseBuffer struct {
 	Data      []byte
@@ -38,6 +41,31 @@ func (r *ResponseBuffer) Body() string {
 
 func (r *ResponseBuffer) Flush() error { return nil }
 
+func (r *ResponseBuffer) Links() Links {
+	var links Links
+	matches := linkMatcher.FindAllStringSubmatch(r.Body(), -1)
+	for _, match := range matches {
+		links = append(links, Link{URL: match[1], Text: match[2]})
+	}
+	return links
+}
+
+type Links []Link
+
+func (l Links) WithText(text string) (Link, bool) {
+	for _, link := range l {
+		if link.Text == text {
+			return link, true
+		}
+	}
+	return Link{}, false
+}
+
+type Link struct {
+	URL  string
+	Text string
+}
+
 type Requestor struct {
 	*gemini.Server
 }
@@ -51,6 +79,10 @@ func (r Requestor) Request(url string, cert *tls.Certificate) ResponseBuffer {
 	var resp ResponseBuffer
 	r.Server.Handler.ServeGemini(context.Background(), &resp, &req)
 	return resp
+}
+
+func (r Requestor) RequestInput(url string, cert *tls.Certificate, input string) ResponseBuffer {
+	return r.Request(fmt.Sprintf("%s?%s", url, input), cert)
 }
 
 func ClientCerts() *tls.Certificate {

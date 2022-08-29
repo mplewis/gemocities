@@ -59,4 +59,30 @@ var _ = Describe("server", func() {
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("client certificate is not yet associated"))
 	})
+
+	It("requests registration details", func() {
+		resp := rq.Request("/account/register", ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusInput))
+		Expect(resp.Meta).To(ContainSubstring("Enter your desired username"))
+	})
+
+	It("confirms registration details and creates an account with a parking page", func() {
+		resp := rq.RequestInput("/account/register", ClientCerts(), "elliot:mrr@fs0cie.ty")
+		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+		Expect(resp.Body()).To(ContainSubstring("confirm your new account details"))
+		Expect(resp.Body()).To(ContainSubstring("Username: elliot"))
+		Expect(resp.Body()).To(ContainSubstring("Email address: mrr@fs0cie.ty"))
+
+		link, ok := resp.Links().WithText("Confirm and register")
+		Expect(ok).To(BeTrue())
+		Expect(link.URL).To(Equal("/account/register/confirm?username=elliot&email=mrr@fs0cie.ty"))
+
+		resp = rq.Request(link.URL, ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusRedirect))
+		Expect(resp.Meta).To(Equal("/account"))
+
+		resp = rq.Request("/~elliot/", ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+		Expect(resp.Body()).To(ContainSubstring("This is your new user directory"))
+	})
 })
