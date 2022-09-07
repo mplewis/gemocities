@@ -2,6 +2,7 @@ package geminis
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"regexp"
 	"strings"
@@ -9,9 +10,13 @@ import (
 	"git.sr.ht/~adnano/go-gemini"
 	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/router"
+	"github.com/mplewis/gemocities/template"
 	"github.com/mplewis/gemocities/user"
 	"github.com/rs/zerolog/log"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 // unEmailMatcher extracts the username and email address from strings of the format "swordfish:me@example.com".
 var unEmailMatcher = regexp.MustCompile(`^([A-Za-z0-9-_]+):([^@]+@[^.]+\..+)$`)
@@ -22,7 +27,12 @@ var usernameMatcher = regexp.MustCompile(`^[A-Za-z0-9-_]+$`)
 // TODO: Break out routes into route builders
 
 func buildRouter(umgr *user.Manager, cmgr *content.Manager) router.Router {
-	tpls := &TemplateCache{}
+	tpls := &template.Cache{
+		FS:     &templates,
+		Prefix: "templates/",
+		Suffix: ".gmi",
+	}
+
 	render := func(w gemini.ResponseWriter, tplName string, data any) {
 		err := tpls.Render(w, tplName, data)
 		if err != nil {
