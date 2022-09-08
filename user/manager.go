@@ -10,7 +10,8 @@ import (
 var ErrInvalidToken = errors.New("invalid token")
 
 type Manager struct {
-	Store    ez3.EZ3
+	Store ez3.EZ3
+	Mailer
 	TestMode bool // enables an alternate client cert parsing path
 }
 
@@ -18,6 +19,10 @@ type NewArgs struct {
 	CertificateHash
 	Email    string
 	Username string
+}
+
+type Mailer interface {
+	SendVerificationEmail(user User) error
 }
 
 func (m *Manager) Get(ch CertificateHash) (User, bool, error) {
@@ -52,7 +57,7 @@ func (m *Manager) Create(args NewArgs) error {
 	if err != nil {
 		return err
 	}
-	return m.Set(User{
+	user := User{
 		Created:           time.Now(),
 		Name:              args.Username,
 		EmailVerified:     false,
@@ -60,7 +65,17 @@ func (m *Manager) Create(args NewArgs) error {
 		Email:             args.Email,
 		WebDAVPassword:    password,
 		VerificationToken: token,
-	})
+	}
+	err = m.Set(user)
+	if err != nil {
+		return err
+	}
+	// TODO
+	// err = m.Mailer.SendVerificationEmail(user)
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
 }
 
 func (m *Manager) ChangePassword(user User) error {
