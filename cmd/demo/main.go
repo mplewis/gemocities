@@ -18,10 +18,11 @@ import (
 )
 
 const shutdownTimeout = 30 * time.Second
+const desc = "Gemocities provides hosting for Gemini sites with a management interface and WebDAV file upload system."
 
 func main() {
 	var cfg types.Config
-	figyr.MustParse(&cfg)
+	figyr.New(desc).MustParse(&cfg)
 	setupLogging(cfg)
 
 	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}

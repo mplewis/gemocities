@@ -4,10 +4,9 @@ go 1.19
 
 require (
 	git.sr.ht/~adnano/go-gemini v0.2.3
-	github.com/k0kubun/pp/v3 v3.1.0
 	github.com/martinlindhe/base36 v1.1.1
 	github.com/mplewis/ez3 v0.1.1-0.20220827000738-bd12a4fc2d7d
-	github.com/mplewis/figyr v0.0.0-20220815022318-2d2c66d5ac98
+	github.com/mplewis/figyr v0.0.0-20220909054156-090d08cfc213
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
 	github.com/rs/zerolog v1.27.0
@@ -44,6 +43,8 @@ require (
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
