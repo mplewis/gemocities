@@ -70,11 +70,10 @@ func (m *Manager) Create(args NewArgs) error {
 	if err != nil {
 		return err
 	}
-	// TODO
-	// err = m.Mailer.SendVerificationEmail(user)
-	// if err != nil {
-	// 	return err
-	// }
+	err = m.Mailer.SendVerificationEmail(user)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
