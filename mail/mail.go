@@ -1,8 +1,16 @@
 package mail
 
 import (
+	"embed"
+
+	"github.com/mplewis/gemocities/template"
+	"github.com/mplewis/gemocities/types"
+
 	"gopkg.in/gomail.v2"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 // templateCache describes a template.Cache.
 type templateCache interface {
@@ -23,6 +31,7 @@ var Send = func(s SMTPArgs, r Rendered) error {
 // Mailer sends emails using a library of templates.
 type Mailer struct {
 	SMTPArgs
+	AppDomain string
 	Templates templateCache
 }
 
@@ -33,6 +42,17 @@ func (m *Mailer) Send(args MailArgs) error {
 		return err
 	}
 	return Send(m.SMTPArgs, content)
+}
+
+func New(cfg types.Config) *Mailer {
+	sa := SMTPArgs{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		Username: cfg.SMTPUsername,
+		Password: cfg.SMTPPassword,
+	}
+	tc := template.Cache{FS: &templates, Prefix: "templates/", Suffix: ".txt"}
+	return &Mailer{SMTPArgs: sa, Templates: &tc, AppDomain: cfg.AppDomain}
 }
 
 // SMTPArgs is the configuration for connecting to an SMTP server.

@@ -6,7 +6,10 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/mplewis/gemocities/mail"
+	"github.com/mplewis/gemocities/types"
+	"github.com/mplewis/gemocities/user"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -47,46 +50,85 @@ var _ = Describe("Mailer", func() {
 		return nil
 	}
 
-	mailer := mail.Mailer{
-		SMTPArgs: mail.SMTPArgs{
-			Host:     "mail.amaya.com",
-			Port:     487,
-			Username: "forest",
-			Password: "oneworld",
-		},
-		Templates: &fakeTemplateCache{},
-	}
+	Describe("Send", func() {
 
-	It("sends the expected mail", func() {
-		err := mailer.Send(mail.MailArgs{
-			From:     "welcome@amaya.com",
-			To:       []string{"lily@amaya.com"},
-			Subject:  "Reset your password",
-			Template: "reset-password",
-			Data: struct {
-				User  string
-				Token string
-			}{User: "lily", Token: "3458762345978"},
-		})
-		Expect(err).ToNot(HaveOccurred())
-		Expect(sentMails).To(Equal([]SentMail{
-			{
-				mail.SMTPArgs{
-					Host:     "mail.amaya.com",
-					Port:     487,
-					Username: "forest",
-					Password: "oneworld",
-				},
-				mail.Rendered{
-					Headers: map[string][]string{
-						"From":    []string{"welcome@amaya.com"},
-						"To":      []string{"lily@amaya.com"},
-						"Subject": []string{"Reset your password"},
-					},
-					MimeType: "text/plain",
-					Body:     "Reset your password: /reset-password?user=lily&token=3458762345978",
-				},
+		mailer := mail.Mailer{
+			AppDomain: "amaya.com",
+			SMTPArgs: mail.SMTPArgs{
+				Host:     "mail.amaya.com",
+				Port:     487,
+				Username: "forest",
+				Password: "oneworld",
 			},
-		}))
+			Templates: &fakeTemplateCache{},
+		}
+
+		It("sends the expected mail", func() {
+			err := mailer.Send(mail.MailArgs{
+				From:     "welcome@amaya.com",
+				To:       []string{"lily@amaya.com"},
+				Subject:  "Reset your password",
+				Template: "reset-password",
+				Data: struct {
+					User  string
+					Token string
+				}{User: "lily", Token: "3458762345978"},
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(sentMails).To(Equal([]SentMail{
+				{
+					mail.SMTPArgs{
+						Host:     "mail.amaya.com",
+						Port:     487,
+						Username: "forest",
+						Password: "oneworld",
+					},
+					mail.Rendered{
+						Headers: map[string][]string{
+							"From":    []string{"welcome@amaya.com"},
+							"To":      []string{"lily@amaya.com"},
+							"Subject": []string{"Reset your password"},
+						},
+						MimeType: "text/plain",
+						Body:     "Reset your password: /reset-password?user=lily&token=3458762345978",
+					},
+				},
+			}))
+		})
+	})
+
+	Describe("Mailer template methods", func() {
+		mailer := mail.New(types.Config{
+			AppDomain:    "amaya.com",
+			SMTPUsername: "postmaster",
+			SMTPPassword: "qubits",
+			SMTPHost:     "mail.amaya.com",
+			SMTPPort:     487,
+		})
+
+		Describe("SendVerificationEmail", func() {
+			It("sends the expected email", func() {
+				err := mailer.SendVerificationEmail(user.User{Email: "lily@amaya.com", Name: "lily", VerificationToken: "deadbeefcafe"})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(sentMails).To(Equal([]SentMail{{
+					SMTPArgs: mail.SMTPArgs{Host: "mail.amaya.com", Port: 487, Username: "postmaster", Password: "qubits"},
+					Rendered: mail.Rendered{
+						Headers: map[string][]string{
+							"From":    []string{"Gemocities <welcome@amaya.com>"},
+							"To":      []string{"lily@amaya.com"},
+							"Subject": []string{"Confirm your Gemocities account"},
+						},
+						MimeType: "text/plain",
+						Body: heredoc.Doc(`
+							Hello! Please follow this link to verify your email address for your new Gemocities account ~lily:
+
+							gemini://gemocities.com/account/register/confirm?user=lily&token=deadbeefcafe
+
+							If you did not sign up for this account, you can safely ignore this email and the account will be deleted automatically.
+						`),
+					},
+				}}))
+			})
+		})
 	})
 })
