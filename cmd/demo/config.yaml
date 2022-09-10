@@ -1,3 +1,4 @@
+app_domain: gemocities.com
 development: true
 content_dir: tmp/content
 gemini_certs_dir: tmp/certs

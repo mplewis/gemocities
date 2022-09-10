@@ -1,6 +1,7 @@
 package types
 
 type Config struct {
+	AppDomain      string `figyr:"required"`
 	GeminiHost     string `figyr:"default=:1965"`
 	WebDAVHost     string `figyr:"default=:8888"`
 	ContentDir     string `figyr:"required"`
@@ -11,7 +12,10 @@ type Config struct {
 	S3Bucket    string `figyr:"required"`
 	S3Namespace string `figyr:"required"`
 
-	// TODO: Mail credentials
+	SMTPHost     string `figyr:"required"`
+	SMTPPort     int    `figyr:"default=587"`
+	SMTPUsername string `figyr:"required"`
+	SMTPPassword string `figyr:"required"`
 
 	Development bool `figyr:"optional"`
 	Debug       bool `figyr:"optional"`

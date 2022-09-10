@@ -3,7 +3,7 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  bin = "./tmp/main --config=cmd/demo/config.yaml"
+  bin = "./tmp/main --config=cmd/demo/config.yaml --config=cmd/demo/config-secret.yaml"
   cmd = "go mod tidy && go build -o ./tmp/main ./cmd/demo"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
