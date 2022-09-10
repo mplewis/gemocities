@@ -11,6 +11,7 @@ import (
 	"github.com/mplewis/figyr"
 	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/geminis"
+	"github.com/mplewis/gemocities/mail"
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
 	"github.com/mplewis/gemocities/webdavs"
@@ -25,7 +26,7 @@ func main() {
 	figyr.New(desc).MustParse(&cfg)
 	setupLogging(cfg)
 
-	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
+	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users"), Mailer: mail.New(cfg)}
 	cmgr := &content.Manager{Dir: cfg.ContentDir}
 	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}

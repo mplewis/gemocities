@@ -8,6 +8,7 @@ import (
 	"github.com/mplewis/ez3"
 	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/geminis"
+	"github.com/mplewis/gemocities/mail"
 	"github.com/mplewis/gemocities/user"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -19,9 +20,23 @@ func TestGemocities(t *testing.T) {
 	RunSpecs(t, "Gemocities Suite")
 }
 
+type SentMail struct {
+	mail.Rendered
+}
+
+type FakeMailer struct {
+	SentToEmails []string
+}
+
+func (f *FakeMailer) SendVerificationEmail(user user.User) error {
+	f.SentToEmails = append(f.SentToEmails, user.Email)
+	return nil
+}
+
 var _ = Describe("server", func() {
 	var contentDir string
 	var rq Requestor
+	var fm FakeMailer
 
 	BeforeEach(func() {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel) // HACK
@@ -29,9 +44,11 @@ var _ = Describe("server", func() {
 		cd, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 		contentDir = cd
+
+		fm = FakeMailer{}
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			UserManager:    &user.Manager{Store: ez3.NewMemory(), TestMode: true},
+			UserManager:    &user.Manager{TestMode: true, Store: ez3.NewMemory(), Mailer: &fm},
 			ContentManager: &content.Manager{Dir: contentDir},
 			ContentDir:     contentDir,
 		})
@@ -80,6 +97,7 @@ var _ = Describe("server", func() {
 		resp = rq.Request(link.URL, ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusRedirect))
 		Expect(resp.Meta).To(Equal("/account"))
+		Expect(fm.SentToEmails).To(Equal([]string{"mrr@fs0cie.ty"}))
 
 		resp = rq.Request("/~elliot/", ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
