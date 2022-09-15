@@ -1,4 +1,4 @@
-package geminis
+package middleware
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type UserKey struct{}
 
 // TODO: Middleware includes cert and user details in logger
 
-func RequireCertWare(mgr *user.Manager, next router.RouteFunction) router.RouteFunction {
+func RequireCert(mgr *user.Manager, next router.RouteFunction) router.RouteFunction {
 	return func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
 		info, err := mgr.AuthorizeGeminiUser(rq.Raw)
 		if err != nil {
@@ -31,7 +31,7 @@ func RequireCertWare(mgr *user.Manager, next router.RouteFunction) router.RouteF
 	}
 }
 
-func RequireUserWare(mgr *user.Manager, next router.RouteFunction) router.RouteFunction {
+func RequireUser(mgr *user.Manager, next router.RouteFunction) router.RouteFunction {
 	return func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
 		info, err := mgr.AuthorizeGeminiUser(rq.Raw)
 		if err != nil {
