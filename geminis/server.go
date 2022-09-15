@@ -9,12 +9,14 @@ import (
 	"git.sr.ht/~adnano/go-gemini"
 	"git.sr.ht/~adnano/go-gemini/certificate"
 	"github.com/mplewis/gemocities/content"
+	"github.com/mplewis/gemocities/mail"
 	"github.com/mplewis/gemocities/user"
 )
 
 type ServerArgs struct {
 	UserManager    *user.Manager
 	ContentManager *content.Manager
+	Mailer         mail.IMailer
 	GeminiCertsDir string
 	ContentDir     string
 	GeminiHost     string
@@ -28,7 +30,7 @@ func BuildServer(args ServerArgs) (*gemini.Server, error) {
 	}
 
 	fs := gemini.FileServer(os.DirFS(args.ContentDir))
-	rt := buildRouter(args.UserManager, args.ContentManager)
+	rt := buildRouter(args.UserManager, args.ContentManager, args.Mailer)
 
 	handler := gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		if strings.HasPrefix(r.URL.Path, "/~") {

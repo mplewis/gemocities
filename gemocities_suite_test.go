@@ -49,8 +49,9 @@ var _ = Describe("server", func() {
 		fm = FakeMailer{}
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			UserManager:    &user.Manager{TestMode: true, Store: ez3.NewMemory(), Mailer: &fm},
+			UserManager:    &user.Manager{TestMode: true, Store: ez3.NewMemory()},
 			ContentManager: &content.Manager{Dir: contentDir},
+			Mailer:         &fm,
 			ContentDir:     contentDir,
 		})
 		Expect(err).ToNot(HaveOccurred())

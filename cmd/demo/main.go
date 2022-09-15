@@ -26,13 +26,15 @@ func main() {
 	figyr.New(desc).MustParse(&cfg)
 	setupLogging(cfg)
 
-	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users"), Mailer: mail.New(cfg)}
+	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
 	cmgr := &content.Manager{Dir: cfg.ContentDir}
+	mailer := mail.New(cfg)
 	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
 	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
 	gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 		UserManager:    umgr,
 		ContentManager: cmgr,
+		Mailer:         mailer,
 		GeminiCertsDir: cfg.GeminiCertsDir,
 		ContentDir:     cfg.ContentDir,
 		GeminiHost:     cfg.GeminiHost,

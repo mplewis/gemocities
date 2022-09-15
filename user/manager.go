@@ -10,8 +10,7 @@ import (
 var ErrInvalidToken = errors.New("invalid token")
 
 type Manager struct {
-	Store ez3.EZ3
-	Mailer
+	Store    ez3.EZ3
 	TestMode bool // enables an alternate client cert parsing path
 }
 
@@ -19,10 +18,6 @@ type NewArgs struct {
 	CertificateHash
 	Email    string
 	Username string
-}
-
-type Mailer interface {
-	SendVerificationEmail(user User) error
 }
 
 func (m *Manager) Get(ch CertificateHash) (User, bool, error) {
@@ -41,21 +36,21 @@ func (m *Manager) Set(user User) error {
 	return m.Store.Set(string(user.CertificateHash), &user)
 }
 
-func (m *Manager) Create(args NewArgs) error {
+func (m *Manager) Create(args NewArgs) (User, error) {
 	_, found, err := m.Get(args.CertificateHash)
 	if err != nil {
-		return err
+		return User{}, err
 	}
 	if found {
-		return errors.New("user already exists")
+		return User{}, errors.New("user already exists")
 	}
 	password, err := generatePassword()
 	if err != nil {
-		return err
+		return User{}, err
 	}
 	token, err := generatePassword()
 	if err != nil {
-		return err
+		return User{}, err
 	}
 	user := User{
 		Created:           time.Now(),
@@ -66,15 +61,7 @@ func (m *Manager) Create(args NewArgs) error {
 		WebDAVPassword:    password,
 		VerificationToken: token,
 	}
-	err = m.Set(user)
-	if err != nil {
-		return err
-	}
-	err = m.Mailer.SendVerificationEmail(user)
-	if err != nil {
-		return err
-	}
-	return nil
+	return user, m.Set(user)
 }
 
 func (m *Manager) ChangePassword(user User) error {
