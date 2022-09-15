@@ -1,5 +1,5 @@
 Hello! Please follow this link to verify your email address for your new Gemocities account ~{{ .Name }}:
 
-gemini://gemocities.com/account/register/confirm?username={{ .Name }}&token={{ .VerificationToken }}
+gemini://gemocities.com/account/register/confirm?token={{ .VerificationToken }}
 
 If you did not sign up for this account, you can safely ignore this email and the account will be deleted automatically.

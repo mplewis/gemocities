@@ -27,7 +27,7 @@ type SentMail struct {
 type fakeTemplateCache struct{}
 
 var fakeTemplates = map[string]string{
-	"reset-password": "Reset your password: /reset-password?user={{ .User }}&token={{ .Token }}",
+	"reset-password": "Reset your password: /reset-password?token={{ .Token }}",
 }
 
 func (f *fakeTemplateCache) RenderString(name string, data any) (string, error) {
@@ -90,7 +90,7 @@ var _ = Describe("Mailer", func() {
 							"Subject": []string{"Reset your password"},
 						},
 						MimeType: "text/plain",
-						Body:     "Reset your password: /reset-password?user=lily&token=3458762345978",
+						Body:     "Reset your password: /reset-password?token=3458762345978",
 					},
 				},
 			}))
@@ -122,7 +122,7 @@ var _ = Describe("Mailer", func() {
 						Body: heredoc.Doc(`
 							Hello! Please follow this link to verify your email address for your new Gemocities account ~lily:
 
-							gemini://gemocities.com/account/register/confirm?username=lily&token=deadbeefcafe
+							gemini://gemocities.com/account/register/confirm?token=deadbeefcafe
 
 							If you did not sign up for this account, you can safely ignore this email and the account will be deleted automatically.
 						`),

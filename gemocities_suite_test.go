@@ -113,7 +113,7 @@ var _ = Describe("server", func() {
 		mail := fm.SentMails[0]
 		Expect(mail.To).To(Equal("mrr@fs0cie.ty"))
 
-		resp = rq.Request(fmt.Sprintf("/account/verify?email=%s&token=%s", "mrr@fs0cie.ty", mail.Token), ClientCerts())
+		resp = rq.Request(fmt.Sprintf("/account/verify?token=%s", mail.Token), ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusRedirect))
 		Expect(resp.Meta).To(Equal("/account"))
 
