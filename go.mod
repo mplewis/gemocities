@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	git.sr.ht/~adnano/go-gemini v0.2.3
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/martinlindhe/base36 v1.1.1
 	github.com/mplewis/ez3 v0.1.1-0.20220827000738-bd12a4fc2d7d
 	github.com/mplewis/figyr v0.0.0-20220909054156-090d08cfc213
@@ -16,8 +17,6 @@ require (
 )
 
 require (
-	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-	github.com/MakeNowJust/heredoc/v2 v2.0.1 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.16.11 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.4 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.17.1 // indirect

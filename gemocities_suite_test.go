@@ -1,6 +1,7 @@
 package gemocities_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/mplewis/ez3"
 	"github.com/mplewis/gemocities/content"
 	"github.com/mplewis/gemocities/geminis"
-	"github.com/mplewis/gemocities/mail"
 	"github.com/mplewis/gemocities/user"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,15 +21,16 @@ func TestGemocities(t *testing.T) {
 }
 
 type SentMail struct {
-	mail.Rendered
+	To    string
+	Token string
 }
 
 type FakeMailer struct {
-	SentToEmails []string
+	SentMails []SentMail
 }
 
 func (f *FakeMailer) SendVerificationEmail(user user.User) error {
-	f.SentToEmails = append(f.SentToEmails, user.Email)
+	f.SentMails = append(f.SentMails, SentMail{To: user.Email, Token: user.VerificationToken})
 	return nil
 }
 
@@ -83,7 +84,7 @@ var _ = Describe("server", func() {
 		Expect(resp.Meta).To(ContainSubstring("Enter your desired username"))
 	})
 
-	It("confirms registration details and creates an account with a parking page", func() {
+	It("confirms registration details, creates an account with a parking page, and verifies", func() {
 		resp := rq.RequestInput("/account/register", ClientCerts(), "elliot:mrr@fs0cie.ty")
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("confirm your new account details"))
@@ -97,10 +98,27 @@ var _ = Describe("server", func() {
 		resp = rq.Request(link.URL, ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusRedirect))
 		Expect(resp.Meta).To(Equal("/account"))
-		Expect(fm.SentToEmails).To(Equal([]string{"mrr@fs0cie.ty"}))
 
 		resp = rq.Request("/~elliot/", ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("This is your new user directory"))
+
+		// user is unverified
+		resp = rq.Request("/account", ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+		Expect(resp.Body()).To(ContainSubstring("Your email address has not been verified"))
+
+		// now verify the user
+		Expect(fm.SentMails).To(HaveLen(1))
+		mail := fm.SentMails[0]
+		Expect(mail.To).To(Equal("mrr@fs0cie.ty"))
+
+		resp = rq.Request(fmt.Sprintf("/account/verify?email=%s&token=%s", "mrr@fs0cie.ty", mail.Token), ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusRedirect))
+		Expect(resp.Meta).To(Equal("/account"))
+
+		resp = rq.Request("/account", ClientCerts())
+		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+		Expect(resp.Body()).To(ContainSubstring("Sign into WebDAV with the following credentials"))
 	})
 })

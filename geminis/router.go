@@ -80,12 +80,9 @@ func buildRouter(umgr *user.Manager, cmgr *content.Manager) router.Router {
 				w.WriteHeader(gemini.StatusInput, fmt.Sprintf("Sorry, the username \"%s\" is taken. Please pick another username.\n\n%s", username, prompt))
 				return
 			}
-			// TODO: Verify no one else has the same email
+			// TODO: Delete unverified accounts and directories
 
-			data := struct{ Username, Email, CertHash string }{
-				Username: username,
-				Email:    matches[2],
-			}
+			data := struct{ Username, Email string }{Username: username, Email: matches[2]}
 			render(w, "confirm", data)
 		})),
 
@@ -116,13 +113,22 @@ func buildRouter(umgr *user.Manager, cmgr *content.Manager) router.Router {
 				Username:        username,
 				Email:           email,
 			}
-			if err := umgr.Create(args); err != nil {
-				log.Error().Err(err).Msg("Failed to create user")
+			exist, err := cmgr.Exists(username)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to check if user exists")
 				w.WriteHeader(gemini.StatusTemporaryFailure, "")
 				return
 			}
+			if exist {
+				w.WriteHeader(gemini.StatusTemporaryFailure, fmt.Sprintf("Sorry, the username \"%s\" is taken. Please pick another username.", username))
+				return
+			}
 			if err := cmgr.Create(username); err != nil {
-				log.Error().Err(err).Msg("Failed to create user directory")
+				log.Error().Err(err).Msg("Failed to create user content directory")
+				w.WriteHeader(gemini.StatusTemporaryFailure, "")
+			}
+			if err := umgr.Create(args); err != nil {
+				log.Error().Err(err).Msg("Failed to create user")
 				w.WriteHeader(gemini.StatusTemporaryFailure, "")
 				return
 			}

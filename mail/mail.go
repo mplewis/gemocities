@@ -5,6 +5,7 @@ import (
 
 	"github.com/mplewis/gemocities/template"
 	"github.com/mplewis/gemocities/types"
+	"github.com/rs/zerolog/log"
 
 	"gopkg.in/gomail.v2"
 )
@@ -52,6 +53,7 @@ func New(cfg types.Config) *Mailer {
 		Password: cfg.SMTPPassword,
 	}
 	tc := template.Cache{FS: &templates, Prefix: "templates/", Suffix: ".txt"}
+	log.Info().Str("host", sa.Host).Int("port", sa.Port).Str("username", sa.Username).Msg("Mailer initialized")
 	return &Mailer{SMTPArgs: sa, Templates: &tc, AppDomain: cfg.AppDomain}
 }
 
