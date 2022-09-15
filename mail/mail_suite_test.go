@@ -51,7 +51,6 @@ var _ = Describe("Mailer", func() {
 	}
 
 	Describe("Send", func() {
-
 		mailer := mail.Mailer{
 			AppDomain: "amaya.com",
 			SMTPArgs: mail.SMTPArgs{
