@@ -17,7 +17,7 @@ func AccountVerify(render Renderer, umgr *user.Manager) router.RouteFunction {
 			return
 		}
 		token, ok := rq.QueryParams["token"]
-		if !ok {
+		if !ok || token == "" {
 			w.WriteHeader(gemini.StatusBadRequest, "missing verification token")
 			return
 		}

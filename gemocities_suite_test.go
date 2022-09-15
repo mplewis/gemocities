@@ -1,6 +1,7 @@
 package gemocities_test
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -26,10 +27,14 @@ type SentMail struct {
 }
 
 type FakeMailer struct {
-	SentMails []SentMail
+	SentMails      []SentMail
+	CrashWithError bool
 }
 
 func (f *FakeMailer) SendVerificationEmail(user user.User) error {
+	if f.CrashWithError {
+		return errors.New("sending email failed")
+	}
 	f.SentMails = append(f.SentMails, SentMail{To: user.Email, Token: user.VerificationToken})
 	return nil
 }
@@ -37,6 +42,8 @@ func (f *FakeMailer) SendVerificationEmail(user user.User) error {
 var _ = Describe("server", func() {
 	var contentDir string
 	var rq Requestor
+	var um user.Manager
+	var cm content.Manager
 	var fm FakeMailer
 
 	BeforeEach(func() {
@@ -46,11 +53,13 @@ var _ = Describe("server", func() {
 		Expect(err).ToNot(HaveOccurred())
 		contentDir = cd
 
+		um = user.Manager{TestMode: true, Store: ez3.NewMemory()}
+		cm = content.Manager{Dir: contentDir}
 		fm = FakeMailer{}
 		gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 			GeminiCertsDir: "test/certs",
-			UserManager:    &user.Manager{TestMode: true, Store: ez3.NewMemory()},
-			ContentManager: &content.Manager{Dir: contentDir},
+			UserManager:    &um,
+			ContentManager: &cm,
 			Mailer:         &fm,
 			ContentDir:     contentDir,
 		})
@@ -121,5 +130,36 @@ var _ = Describe("server", func() {
 		resp = rq.Request("/account", ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
 		Expect(resp.Body()).To(ContainSubstring("Sign into WebDAV with the following credentials"))
+	})
+
+	Context("when sending the verification email fails", func() {
+		BeforeEach(func() {
+			fm.CrashWithError = true
+		})
+		AfterEach(func() {
+			fm.CrashWithError = false
+		})
+
+		It("rolls back user account creation", func() {
+			resp := rq.RequestInput("/account/register", ClientCerts(), "elliot:mrr@fs0cie.ty")
+			Expect(resp.Status).To(Equal(gemini.StatusSuccess))
+			Expect(resp.Body()).To(ContainSubstring("confirm your new account details"))
+			Expect(resp.Body()).To(ContainSubstring("Username: elliot"))
+			Expect(resp.Body()).To(ContainSubstring("Email address: mrr@fs0cie.ty"))
+
+			link, ok := resp.Links().WithText("Confirm and register")
+			Expect(ok).To(BeTrue())
+			Expect(link.URL).To(Equal("/account/register/confirm?username=elliot&email=mrr@fs0cie.ty"))
+
+			resp = rq.Request(link.URL, ClientCerts())
+			Expect(resp.Status).To(Equal(gemini.StatusTemporaryFailure))
+			Expect(resp.Meta).To(Equal("Sorry, there was an error creating your account. Please try again."))
+
+			// verify rollback
+			users, err := um.Store.List("")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(users).To(BeEmpty())
+			Expect(cm.Exists("elliot")).To(BeFalse())
+		})
 	})
 })

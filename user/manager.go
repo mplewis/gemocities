@@ -64,6 +64,10 @@ func (m *Manager) Create(args NewArgs) (User, error) {
 	return user, m.Set(user)
 }
 
+func (m *Manager) Delete(ch CertificateHash) error {
+	return m.Store.Del(string(ch))
+}
+
 func (m *Manager) ChangePassword(user User) error {
 	password, err := generatePassword()
 	if err != nil {
