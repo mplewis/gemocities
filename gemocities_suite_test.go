@@ -93,7 +93,7 @@ var _ = Describe("server", func() {
 
 		link, ok := resp.Links().WithText("Confirm and register")
 		Expect(ok).To(BeTrue())
-		Expect(link.URL).To(Equal("/account/register/confirm?username=elliot&email=mrr@fs0cie.ty"))
+		Expect(link.URL).To(Equal("/account/verify?username=elliot&email=mrr@fs0cie.ty"))
 
 		resp = rq.Request(link.URL, ClientCerts())
 		Expect(resp.Status).To(Equal(gemini.StatusRedirect))

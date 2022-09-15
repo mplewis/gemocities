@@ -122,7 +122,7 @@ var _ = Describe("Mailer", func() {
 						Body: heredoc.Doc(`
 							Hello! Please follow this link to verify your email address for your new Gemocities account ~lily:
 
-							gemini://gemocities.com/account/register/confirm?token=deadbeefcafe
+							gemini://gemocities.com/account/verify?token=deadbeefcafe
 
 							If you did not sign up for this account, you can safely ignore this email and the account will be deleted automatically.
 						`),
