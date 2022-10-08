@@ -1,3 +1,6 @@
+code.rocketnine.space/tslocum/ez v0.0.0-20210506054357-569018bd037a/go.mod h1:SQrM+bQ4eZdyAVTxuF2BNnyAnojHP6Kcmm2vMszoFWw=
+code.rocketnine.space/tslocum/gmitohtml v1.0.5 h1:cc4MdgoGS7zBahUJovz6qDLa94eZpc2ncby4gxmckNc=
+code.rocketnine.space/tslocum/gmitohtml v1.0.5/go.mod h1:QOy0pJQltuKQQDupfkmtN1DOlrUBCg55xFaQwoKQwlM=
 git.sr.ht/~adnano/go-gemini v0.2.3 h1:oJ+Y0/mheZ4Vg0ABjtf5dlmvq1yoONStiaQvmWWkofc=
 git.sr.ht/~adnano/go-gemini v0.2.3/go.mod h1:hQ75Y0i5jSFL+FQ7AzWVAYr5LQsaFC7v3ZviNyj46dY=
 github.com/MakeNowJust/heredoc v1.0.0 h1:cXCdzVdstXyiTqTvfqk9SDHpKNjxuom+DOlyEeQ4pzQ=
