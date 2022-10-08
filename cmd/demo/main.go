@@ -15,6 +15,7 @@ import (
 	"github.com/mplewis/gemocities/types"
 	"github.com/mplewis/gemocities/user"
 	"github.com/mplewis/gemocities/webdavs"
+	"github.com/mplewis/gemocities/webproxys"
 	"github.com/rs/zerolog/log"
 )
 
@@ -29,8 +30,11 @@ func main() {
 	umgr := &user.Manager{Store: ez3.NewFS("tmp/db/users")}
 	cmgr := &content.Manager{Dir: cfg.ContentDir}
 	mailer := mail.New(cfg)
-	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
-	httpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
+
+	errors := make(chan error)
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt)
+
 	gemSrv, err := geminis.BuildServer(geminis.ServerArgs{
 		UserManager:    umgr,
 		ContentManager: cmgr,
@@ -42,19 +46,22 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to build Gemini server")
 	}
-
-	errors := make(chan error)
-	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt)
-
-	go func() {
-		log.Info().Str("host", cfg.WebDAVHost).Msg("WebDAV server started")
-		errors <- httpSrv.ListenAndServe()
-	}()
-
 	go func() {
 		log.Info().Str("host", cfg.GeminiHost).Msg("Gemini server started")
 		errors <- gemSrv.ListenAndServe(context.Background())
+	}()
+
+	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
+	davHttpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
+	go func() {
+		log.Info().Str("host", cfg.WebDAVHost).Msg("WebDAV server started")
+		errors <- davHttpSrv.ListenAndServe()
+	}()
+
+	proxySrv := &http.Server{Addr: cfg.HTTPHost, Handler: webproxys.Handler(cfg)}
+	go func() {
+		log.Info().Str("host", cfg.HTTPHost).Msg("HTTP proxy server started")
+		errors <- proxySrv.ListenAndServe()
 	}()
 
 	select {
@@ -62,8 +69,9 @@ func main() {
 		log.Panic().Err(err).Msg("Server crashed")
 	case <-exit:
 		gracefullyShutdownAll(map[string]Shutdownable{
-			"WebDAV": httpSrv,
+			"WebDAV": davHttpSrv,
 			"Gemini": gemSrv,
+			"HTTP":   proxySrv,
 		})
 	}
 }

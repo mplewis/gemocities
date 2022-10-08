@@ -4,6 +4,7 @@ type Config struct {
 	AppDomain      string `figyr:"required"`
 	GeminiHost     string `figyr:"default=:1965"`
 	WebDAVHost     string `figyr:"default=:8888"`
+	HTTPHost       string `figyr:"default=:8080"`
 	ContentDir     string `figyr:"required"`
 	GeminiCertsDir string `figyr:"required"`
 
