@@ -69,9 +69,9 @@ func main() {
 		log.Panic().Err(err).Msg("Server crashed")
 	case <-exit:
 		gracefullyShutdownAll(map[string]Shutdownable{
-			"WebDAV": davHttpSrv,
-			"Gemini": gemSrv,
-			"HTTP":   proxySrv,
+			"Gemini":     gemSrv,
+			"WebDAV":     davHttpSrv,
+			"HTTP proxy": proxySrv,
 		})
 	}
 }

@@ -2,16 +2,25 @@ package webproxys
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"strings"
+	"text/template"
 
-	"code.rocketnine.space/tslocum/gmitohtml/pkg/gmitohtml"
 	"git.sr.ht/~adnano/go-gemini"
 	"github.com/mplewis/gemocities/types"
 	"github.com/rs/zerolog/log"
 )
+
+//go:embed style.css
+var styleCSS []byte
+
+//go:embed layout.html.tpl
+var layoutRaw string
+var layoutTmpl = template.Must(template.New("layout").Parse(layoutRaw))
 
 func isRedirect(s gemini.Status) bool {
 	return int(s) >= 30 && int(s) < 40
@@ -26,6 +35,12 @@ func Handler(cfg types.Config) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		orig := r.URL.Path
+		if orig == "/style.css" {
+			w.Header().Set("Content-Type", "text/css")
+			w.Write(styleCSS)
+			return
+		}
+
 		url := fmt.Sprintf("gemini://%s%s", host, orig)
 		log := log.With().Str("url", url).Logger()
 
@@ -50,15 +65,19 @@ func Handler(cfg types.Config) http.Handler {
 			return
 		}
 
-		w.WriteHeader(statusToHTTP[resp.Status])
-		w.Header().Set("Content-Type", "text/html")
-		body, err := io.ReadAll(resp.Body)
+		proxied, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to read response body")
 			return
 		}
-		html := gmitohtml.Convert(body, url)
-		w.Write(html)
-		log.Info().Int("bytes", len(body)).Msg("Proxy request")
+		escaped := html.EscapeString(string(proxied))
+		// inLayout := gmitohtml.Convert([]byte(escaped), url)
+		data := map[string]any{"Content": string(escaped)}
+
+		w.WriteHeader(statusToHTTP[resp.Status])
+		w.Header().Set("Content-Type", "text/html")
+		layoutTmpl.Execute(w, data)
+		w.Write([]byte("<h1>Hello world!</h1>"))
+		log.Info().Int("bytes", len(data)).Msg("Proxy request")
 	})
 }

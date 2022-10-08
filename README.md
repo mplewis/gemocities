@@ -9,3 +9,4 @@
 - http proxy
 - reset password email
 - delete account
+- convert gemini to html

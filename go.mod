@@ -3,7 +3,6 @@ module github.com/mplewis/gemocities
 go 1.19
 
 require (
-	code.rocketnine.space/tslocum/gmitohtml v1.0.5
 	git.sr.ht/~adnano/go-gemini v0.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/martinlindhe/base36 v1.1.1
