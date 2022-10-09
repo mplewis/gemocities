@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"html"
 	"io"
 	"net/http"
 	"strings"
@@ -22,6 +21,13 @@ var styleCSS []byte
 var layoutRaw string
 var layoutTmpl = template.Must(template.New("layout").Parse(layoutRaw))
 
+type TemplateData struct {
+	Content     string
+	Path        string
+	GeminiURL   string
+	UserContent bool
+}
+
 func isRedirect(s gemini.Status) bool {
 	return int(s) >= 30 && int(s) < 40
 }
@@ -38,6 +44,10 @@ func Handler(cfg types.Config) http.Handler {
 		if orig == "/style.css" {
 			w.Header().Set("Content-Type", "text/css")
 			w.Write(styleCSS)
+			return
+		}
+		if orig == "/favicon.ico" {
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
@@ -70,14 +80,20 @@ func Handler(cfg types.Config) http.Handler {
 			log.Error().Err(err).Msg("Failed to read response body")
 			return
 		}
-		escaped := html.EscapeString(string(proxied))
-		// inLayout := gmitohtml.Convert([]byte(escaped), url)
-		data := map[string]any{"Content": string(escaped)}
-
+		converted := ConvertToHTML(string(proxied))
+		data := TemplateData{
+			Content:     converted,
+			Path:        orig,
+			GeminiURL:   url,
+			UserContent: strings.HasPrefix(orig, "/~"),
+		}
 		w.WriteHeader(statusToHTTP[resp.Status])
 		w.Header().Set("Content-Type", "text/html")
-		layoutTmpl.Execute(w, data)
-		w.Write([]byte("<h1>Hello world!</h1>"))
-		log.Info().Int("bytes", len(data)).Msg("Proxy request")
+		err = layoutTmpl.Execute(w, data)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to render template")
+			return
+		}
+		log.Info().Int("bytes", len(converted)).Msg("Proxy request")
 	})
 }

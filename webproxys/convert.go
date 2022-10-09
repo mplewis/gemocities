@@ -76,6 +76,9 @@ func ConvertToHTML(geminiBody string) string {
 		}
 		chunks = append(chunks, TaggedChunk{"", c, nil})
 	}
+	// TODO: * UL
+	// TODO: > Blockquote
+	// TODO: ``` can start a line without being alone
 
 	return process(chunks)
 }
