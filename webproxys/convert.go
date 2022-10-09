@@ -74,16 +74,53 @@ func preReplace(geminiBody string) string {
 	return strings.Join(lines, "\n")
 }
 
+func chunkByPre(geminiBody string) ([]string, []string) {
+	var normal []string
+	var preformatted []string
+	var pre bool
+	var chunk []string
+	done := func(body string) {
+		if pre {
+			normal = append(normal, body)
+		} else {
+			preformatted = append(preformatted, body)
+		}
+	}
+
+	for _, line := range strings.Split(geminiBody, "\n") {
+		if line == markPre {
+			pre = !pre
+			done(strings.Join(chunk, "\n"))
+			chunk = []string{}
+		} else {
+			chunk = append(chunk, line)
+		}
+	}
+	if len(chunk) > 0 {
+		done(strings.Join(chunk, "\n"))
+	}
+	return normal, preformatted
+}
+
 func ConvertToHTML(geminiBody string) string {
+	// TODO: Escape HTML in the body.
+	// Maybe handle preformatted blocks separately?
 	body := strings.TrimSpace(geminiBody)
-	body = replaceByLine(
-		body,
-		linkReplacer,
-		replacerForRegexp(mH1, "<h1>$1</h1>"),
-		replacerForRegexp(mH2, "<h2>$1</h2>"),
-		replacerForRegexp(mH3, "<h3>$1</h3>"),
-		replacerForRegexp(mBlank, "<br>"),
-	)
-	body = preReplace(body)
+	normal, pre := chunkByPre(body)
+	processed := []string{}
+	for i, nc := range normal {
+		processed = append(processed, replaceByLine(
+			nc,
+			linkReplacer,
+			replacerForRegexp(mH1, "<h1>$1</h1>"),
+			replacerForRegexp(mH2, "<h2>$1</h2>"),
+			replacerForRegexp(mH3, "<h3>$1</h3>"),
+			replacerForRegexp(mBlank, "<br>"),
+		))
+		if i < len(pre) {
+			processed = append(processed, html.EscapeString(pre[i]))
+		}
+	}
+	body = strings.Join(processed, "\n")
 	return body
 }

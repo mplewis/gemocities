@@ -7,14 +7,14 @@
 => /some/path Some Link
 => /some/other/path
 
-<pre><code>Some code</code></pre>
-
 ```
 This is some test content
 It is preformatted
+<HTML> is <escaped /> in here
 ```
 
-This is not <pre>formatted content
+This is not preformatted content and it is escaped:
+<script type="javascript">alert("uh-oh!");</script>
 
 ```
 This is another
