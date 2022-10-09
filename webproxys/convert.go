@@ -2,6 +2,7 @@ package webproxys
 
 import (
 	"fmt"
+	"html"
 	"regexp"
 	"strings"
 )
@@ -10,9 +11,9 @@ var mBlank = regexp.MustCompile(`^\s*$`)
 var mH1 = regexp.MustCompile(`^# (.*)$`)
 var mH2 = regexp.MustCompile(`^## (.*)$`)
 var mH3 = regexp.MustCompile(`^### (.*)$`)
-
-// =>[<whitespace>]<URL>[<whitespace><USER-FRIENDLY LINK NAME>]
 var mLink = regexp.MustCompile(`^=>\s*(\S+)\s*(.*)$`)
+
+const markPre = "```"
 
 type replacer = func(string) *string
 
@@ -30,6 +31,7 @@ func replaceByLine(geminiBody string, replacers ...replacer) string {
 	return strings.Join(lines, "\n")
 }
 
+// replacerForRegexp replaces matching regexps with the given replacement string.
 func replacerForRegexp(matcher *regexp.Regexp, replacement string) replacer {
 	return func(line string) *string {
 		if matcher.MatchString(line) {
@@ -40,6 +42,7 @@ func replacerForRegexp(matcher *regexp.Regexp, replacement string) replacer {
 	}
 }
 
+// linkReplacer replaces Gemini links with HTML links.
 func linkReplacer(line string) *string {
 	match := mLink.FindStringSubmatch(line)
 	if match != nil {
@@ -53,14 +56,34 @@ func linkReplacer(line string) *string {
 	return nil
 }
 
+func preReplace(geminiBody string) string {
+	lines := strings.Split(geminiBody, "\n")
+	var pre bool
+	for i, line := range lines {
+		if line == markPre {
+			pre = !pre
+			if pre {
+				lines[i] = "<pre>"
+			} else {
+				lines[i] = "</pre>"
+			}
+		} else if pre {
+			lines[i] = html.EscapeString(line)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func ConvertToHTML(geminiBody string) string {
 	body := strings.TrimSpace(geminiBody)
-	return replaceByLine(
+	body = replaceByLine(
 		body,
+		linkReplacer,
 		replacerForRegexp(mH1, "<h1>$1</h1>"),
 		replacerForRegexp(mH2, "<h2>$1</h2>"),
 		replacerForRegexp(mH3, "<h3>$1</h3>"),
-		linkReplacer,
 		replacerForRegexp(mBlank, "<br>"),
 	)
+	body = preReplace(body)
+	return body
 }

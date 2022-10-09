@@ -6,3 +6,18 @@
 
 => /some/path Some Link
 => /some/other/path
+
+<pre><code>Some code</code></pre>
+
+```
+This is some test content
+It is preformatted
+```
+
+This is not <pre>formatted content
+
+```
+This is another
+block of
+test content
+```
