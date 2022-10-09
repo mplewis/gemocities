@@ -1,5 +1,30 @@
-# Hello world!
+# Welcome to Gemocities
 
-This is the home page.
+Gemocities is a free hosting service for your Gemini content. All you need is a Gemini client and a working email address to get started:
 
-=> account Manage my account
+=> account » Sign in or sign up
+
+## What's included?
+
+* 50 MB of free storage
+* WebDAV
+
+We do *not* support the following use cases:
+
+* Illegal content
+* Hateful content (transphobic, racist, etc.)
+* Hosting content for your other websites
+
+If you find any of these things on Gemocities, please let us know:
+
+=> mailto:abuse@gemocities.com » Report abuse
+
+## What is Gemini?
+
+Gemini is a new internet protocol which is lighter than HTTP and more accessible than Gopher. It's very fast and respects your user privacy. Think of it as an alternate-history vesrion of the Web where text content won over JavaScript.
+
+Learn more at the Project Gemini site:
+
+=> gemini://gemini.circumlunar.space Gemini link
+
+=> https://gemini.circumlunar.space/ HTTP link
