@@ -17,19 +17,15 @@ pre, code {
 }
 
 a {
-	color:rgb(0, 98, 155);
 	text-decoration: none;
 }
 
 nav {
-	border-bottom: 3px solid rgba(0, 0, 0, 0.3);
 	padding-bottom: 10px;
 }
 
 footer {
-	border-top: 3px solid rgba(0, 0, 0, 0.3);
 	margin-top: 20px;
-	/* padding-top: 10px; */
 	text-align: center;
 }
 
@@ -45,3 +41,60 @@ footer {
 	opacity: 1.0;
 }
 
+/* Colors */
+
+body {
+	background-color: #fff;
+}
+
+p {
+	color: #333;
+}
+
+h1,
+h2,
+h3,
+pre {
+	color: #000;
+}
+
+a {
+	color: rgb(0, 98, 155);
+}
+
+nav {
+	border-bottom: 3px solid rgba(0, 0, 0, 0.3);
+}
+
+footer {
+	border-top: 3px solid rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+		background-color: #222;
+	}
+
+	p {
+		color: #ddd;
+	}
+
+	h1,
+	h2,
+	h3,
+	pre {
+		color: #fff;
+	}
+
+	a {
+		color: rgb(0, 146, 230);
+	}
+
+	nav {
+		border-bottom: 3px solid #444;
+	}
+
+	footer {
+		border-top: 3px solid #444;
+	}
+}
