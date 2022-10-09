@@ -1,6 +1,7 @@
 package webproxys
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -8,6 +9,9 @@ import (
 var mH1 = regexp.MustCompile(`^# (.*)$`)
 var mH2 = regexp.MustCompile(`^## (.*)$`)
 var mH3 = regexp.MustCompile(`^### (.*)$`)
+
+// =>[<whitespace>]<URL>[<whitespace><USER-FRIENDLY LINK NAME>]
+var mLink = regexp.MustCompile(`^=>\s*(\S+)\s*(.*)$`)
 
 type replacer = func(string) *string
 
@@ -35,11 +39,25 @@ func replacerForRegexp(matcher *regexp.Regexp, replacement string) replacer {
 	}
 }
 
+func linkReplacer(line string) *string {
+	match := mLink.FindStringSubmatch(line)
+	if match != nil {
+		url, desc := match[1], match[2]
+		if desc == "" {
+			desc = url
+		}
+		a := fmt.Sprintf("<a href=\"%s\">%s</a>", url, desc)
+		return &a
+	}
+	return nil
+}
+
 func ConvertToHTML(geminiBody string) string {
 	return replaceByLine(
 		geminiBody,
 		replacerForRegexp(mH1, "<h1>$1</h1>"),
 		replacerForRegexp(mH2, "<h2>$1</h2>"),
 		replacerForRegexp(mH3, "<h3>$1</h3>"),
+		linkReplacer,
 	)
 }
