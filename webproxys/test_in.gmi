@@ -2,9 +2,10 @@
 
 ## Header 2
 
-### Header 3
+### Header 3 <script>with escaped content</script>
 
 => /some/path Some Link
+=> /another/path Some Link <script>with escaped content</script>
 => /some/other/path
 
 ```

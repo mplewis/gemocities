@@ -7,120 +7,75 @@ import (
 	"strings"
 )
 
-var mBlank = regexp.MustCompile(`^\s*$`)
-var mH1 = regexp.MustCompile(`^# (.*)$`)
-var mH2 = regexp.MustCompile(`^## (.*)$`)
-var mH3 = regexp.MustCompile(`^### (.*)$`)
+var mH = regexp.MustCompile(`^(#{1,3}) (.*)$`)
 var mLink = regexp.MustCompile(`^=>\s*(\S+)\s*(.*)$`)
 
 const markPre = "```"
 
-type replacer = func(string) *string
+type TaggedChunk struct {
+	Tag   string
+	Body  string
+	Match []string
+}
 
-// replaceByLine performs text replacement on a line-by-line basis.
-func replaceByLine(geminiBody string, replacers ...replacer) string {
-	lines := strings.Split(geminiBody, "\n")
-	for _, replacer := range replacers {
-		for i, line := range lines {
-			out := replacer(line)
-			if out != nil {
-				lines[i] = *out
+func process(chunks []TaggedChunk) string {
+	out := ""
+	for _, chunk := range chunks {
+		switch chunk.Tag {
+		case "header":
+			hLevelRaw, text := chunk.Match[1], chunk.Match[2]
+			hLevel := "h1"
+			if hLevelRaw == "##" {
+				hLevel = "h2"
+			} else if hLevelRaw == "###" {
+				hLevel = "h3"
 			}
-		}
-	}
-	return strings.Join(lines, "\n")
-}
-
-// replacerForRegexp replaces matching regexps with the given replacement string.
-func replacerForRegexp(matcher *regexp.Regexp, replacement string) replacer {
-	return func(line string) *string {
-		if matcher.MatchString(line) {
-			val := matcher.ReplaceAllString(line, replacement)
-			return &val
-		}
-		return nil
-	}
-}
-
-// linkReplacer replaces Gemini links with HTML links.
-func linkReplacer(line string) *string {
-	match := mLink.FindStringSubmatch(line)
-	if match != nil {
-		url, desc := match[1], match[2]
-		if desc == "" {
-			desc = url
-		}
-		a := fmt.Sprintf("<a href=\"%s\">%s</a><br>", url, desc)
-		return &a
-	}
-	return nil
-}
-
-func preReplace(geminiBody string) string {
-	lines := strings.Split(geminiBody, "\n")
-	var pre bool
-	for i, line := range lines {
-		if line == markPre {
-			pre = !pre
-			if pre {
-				lines[i] = "<pre>"
-			} else {
-				lines[i] = "</pre>"
+			out += fmt.Sprintf("<%s>%s</%s>\n", hLevel, html.EscapeString(text), hLevel)
+		case "link":
+			href, text := chunk.Match[1], chunk.Match[2]
+			if text == "" {
+				text = href
 			}
-		} else if pre {
-			lines[i] = html.EscapeString(line)
+			// TODO: Escape href
+			out += fmt.Sprintf("<p><a href=\"%s\">%s</a></p>\n", href, html.EscapeString(text))
+		case "preformatted":
+			out += fmt.Sprintf("<p><pre>%s</pre></p>\n", html.EscapeString(chunk.Body))
+		default:
+			out += fmt.Sprintf("<p>%s</p>\n", html.EscapeString(chunk.Body))
 		}
 	}
-	return strings.Join(lines, "\n")
-}
-
-func chunkByPre(geminiBody string) ([]string, []string) {
-	var normal []string
-	var preformatted []string
-	var pre bool
-	var chunk []string
-	done := func(body string) {
-		if pre {
-			normal = append(normal, body)
-		} else {
-			preformatted = append(preformatted, body)
-		}
-	}
-
-	for _, line := range strings.Split(geminiBody, "\n") {
-		if line == markPre {
-			pre = !pre
-			done(strings.Join(chunk, "\n"))
-			chunk = []string{}
-		} else {
-			chunk = append(chunk, line)
-		}
-	}
-	if len(chunk) > 0 {
-		done(strings.Join(chunk, "\n"))
-	}
-	return normal, preformatted
+	return out
 }
 
 func ConvertToHTML(geminiBody string) string {
-	// TODO: Escape HTML in the body.
-	// Maybe handle preformatted blocks separately?
-	body := strings.TrimSpace(geminiBody)
-	normal, pre := chunkByPre(body)
-	processed := []string{}
-	for i, nc := range normal {
-		processed = append(processed, replaceByLine(
-			nc,
-			linkReplacer,
-			replacerForRegexp(mH1, "<h1>$1</h1>"),
-			replacerForRegexp(mH2, "<h2>$1</h2>"),
-			replacerForRegexp(mH3, "<h3>$1</h3>"),
-			replacerForRegexp(mBlank, "<br>"),
-		))
-		if i < len(pre) {
-			processed = append(processed, html.EscapeString(pre[i]))
+	chunks := []TaggedChunk{}
+	chunk := []string{}
+	pre := false
+
+	for _, c := range strings.Split(strings.TrimSpace(geminiBody), "\n") {
+		if c == markPre {
+			pre = !pre
+			if !pre {
+				chunks = append(chunks, TaggedChunk{"preformatted", strings.Join(chunk, "\n"), nil})
+				chunk = []string{}
+			}
+			continue
 		}
+		if pre {
+			chunk = append(chunk, c)
+			continue
+		}
+
+		if m := mH.FindStringSubmatch(c); m != nil {
+			chunks = append(chunks, TaggedChunk{"header", c, m})
+			continue
+		}
+		if m := mLink.FindStringSubmatch(c); m != nil {
+			chunks = append(chunks, TaggedChunk{"link", c, m})
+			continue
+		}
+		chunks = append(chunks, TaggedChunk{"", c, nil})
 	}
-	body = strings.Join(processed, "\n")
-	return body
+
+	return process(chunks)
 }
