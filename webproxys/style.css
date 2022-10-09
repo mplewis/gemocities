@@ -6,7 +6,7 @@
 
 body {
 	max-width: 600px;
-	padding: 40px;
+	padding: 20px;
 	margin-left: auto;
 	margin-right: auto;
 	line-height: 1.3;
@@ -27,6 +27,10 @@ nav {
 footer {
 	margin-top: 20px;
 	text-align: center;
+}
+
+nav h1:first-child { /* site name */
+	margin-top: 0;
 }
 
 .notice	{
