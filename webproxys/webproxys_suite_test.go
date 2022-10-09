@@ -2,6 +2,8 @@ package webproxys_test
 
 import (
 	_ "embed"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/mplewis/gemocities/webproxys"
@@ -22,6 +24,10 @@ func TestWebproxys(t *testing.T) {
 
 var _ = Describe("ConvertToHTML", func() {
 	It("converts as expected", func() {
-		Expect(webproxys.ConvertToHTML(testIn)).To(Equal(testOut))
+		actual := strings.TrimSpace(webproxys.ConvertToHTML(testIn))
+		expected := strings.TrimSpace(testOut)
+		fmt.Println(actual)
+		fmt.Println(expected)
+		Expect(actual).To(Equal(expected))
 	})
 })
