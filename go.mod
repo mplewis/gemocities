@@ -6,6 +6,7 @@ require (
 	git.sr.ht/~adnano/go-gemini v0.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/martinlindhe/base36 v1.1.1
+	github.com/miolini/datacounter v1.0.3
 	github.com/mplewis/ez3 v0.1.1-0.20220827000738-bd12a4fc2d7d
 	github.com/mplewis/figyr v0.0.0-20220909054156-090d08cfc213
 	github.com/onsi/ginkgo/v2 v2.1.4

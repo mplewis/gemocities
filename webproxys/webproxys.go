@@ -10,7 +10,9 @@ import (
 	"text/template"
 
 	"git.sr.ht/~adnano/go-gemini"
+	"github.com/miolini/datacounter"
 	"github.com/mplewis/gemocities/types"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -26,6 +28,7 @@ type TemplateData struct {
 	Path        string
 	GeminiURL   string
 	UserContent bool
+	Error       bool
 }
 
 func isRedirect(s gemini.Status) bool {
@@ -40,6 +43,16 @@ func Handler(cfg types.Config) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		write := func(log zerolog.Logger, data TemplateData) {
+			wc := datacounter.NewWriterCounter(w)
+			err := layoutTmpl.Execute(wc, data)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to render template")
+				return
+			}
+			log.Info().Uint64("bytes", wc.Count()).Msg("Proxy response")
+		}
+
 		orig := r.URL.Path
 		if orig == "/style.css" {
 			w.Header().Set("Content-Type", "text/css")
@@ -54,11 +67,19 @@ func Handler(cfg types.Config) http.Handler {
 		url := fmt.Sprintf("gemini://%s%s", host, orig)
 		log := log.With().Str("url", url).Logger()
 
+		data := TemplateData{
+			Path:        orig,
+			GeminiURL:   url,
+			UserContent: strings.HasPrefix(orig, "/~"),
+		}
+
 		resp, err := gc.Get(context.Background(), url)
 		if err != nil {
 			log.Warn().Err(err).Msg("Failed to serve Gemini response")
+			data.Error = true
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Couldn't proxy Gemini response. Try in your Gemini client? gemini://%s%s", cfg.AppDomain, orig)
+			data.Content = "Sorry, we couldn't proxy the response from the Gemocities Gemini server. Please try loading this page in your Gemini client:"
+			write(log, data)
 			return
 		}
 		defer resp.Body.Close()
@@ -80,20 +101,9 @@ func Handler(cfg types.Config) http.Handler {
 			log.Error().Err(err).Msg("Failed to read response body")
 			return
 		}
-		converted := ConvertToHTML(string(proxied))
-		data := TemplateData{
-			Content:     converted,
-			Path:        orig,
-			GeminiURL:   url,
-			UserContent: strings.HasPrefix(orig, "/~"),
-		}
+		data.Content = ConvertToHTML(string(proxied))
 		w.WriteHeader(statusToHTTP[resp.Status])
 		w.Header().Set("Content-Type", "text/html")
-		err = layoutTmpl.Execute(w, data)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to render template")
-			return
-		}
-		log.Info().Int("bytes", len(converted)).Msg("Proxy request")
+		write(log, data)
 	})
 }

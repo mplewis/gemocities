@@ -15,6 +15,7 @@
 <body>
 	<nav>
 		<h1><a href="/">Gemocities</a></h1>
+		{{ if not .Error }}
 		<div class="dimmed">
 			<p class="notice">
 				This is a proxy of Gemini content at <code>{{ .Path }}</code>.
@@ -26,9 +27,17 @@
 				<a href="{{ .GeminiURL }}">View original in Gemini &raquo;</a>
 			</p>
 		</div>
+		{{ end }}
 	</nav>
 	<main>
+		{{ if .Error }}
+		<div class="error">
+			<p>{{ .Content }}</p>
+			<p><a href="{{ .GeminiURL }}">View original in Gemini &raquo;</a></p>
+		</div>
+		{{ else }}
 		{{ .Content }}
+		{{ end }}
 	</main>
 	<footer>
 		<div class="dimmed">
