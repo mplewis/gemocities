@@ -18,6 +18,7 @@ pre, code {
 
 a {
 	text-decoration: none;
+	transition: 0.2s;
 }
 
 nav {
@@ -63,7 +64,10 @@ pre {
 }
 
 a {
-	color: rgb(0, 98, 155);
+	color: rgb(0, 106, 168);
+}
+a:hover {
+	color: rgb(0, 146, 230);
 }
 
 nav {
@@ -92,6 +96,9 @@ footer {
 
 	a {
 		color: rgb(0, 146, 230);
+	}
+	a:hover {
+		color: rgb(86, 192, 253);
 	}
 
 	nav {
