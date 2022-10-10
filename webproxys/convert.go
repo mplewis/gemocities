@@ -9,6 +9,7 @@ import (
 
 var mH = regexp.MustCompile(`^(#{1,3}) (.*)$`)
 var mLink = regexp.MustCompile(`^=>\s*(\S+)\s*(.*)$`)
+var mList = regexp.MustCompile(`^\*\s+(.*)$`)
 
 const markPre = "```"
 
@@ -40,6 +41,8 @@ func process(chunks []TaggedChunk) string {
 			out += fmt.Sprintf("<p><a href=\"%s\">%s</a></p>\n", href, html.EscapeString(text))
 		case "preformatted":
 			out += fmt.Sprintf("<p><pre>%s</pre></p>\n", html.EscapeString(chunk.Body))
+		case "list":
+			out += fmt.Sprintf("<li>%s</li>\n", html.EscapeString(chunk.Match[1]))
 		default:
 			out += fmt.Sprintf("<p>%s</p>\n", html.EscapeString(chunk.Body))
 		}
@@ -74,9 +77,12 @@ func ConvertToHTML(geminiBody string) string {
 			chunks = append(chunks, TaggedChunk{"link", c, m})
 			continue
 		}
+		if m := mList.FindStringSubmatch(c); m != nil {
+			chunks = append(chunks, TaggedChunk{"list", c, m})
+			continue
+		}
 		chunks = append(chunks, TaggedChunk{"", c, nil})
 	}
-	// TODO: * UL
 	// TODO: > Blockquote
 	// TODO: ``` can start a line without being alone
 

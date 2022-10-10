@@ -52,7 +52,7 @@ body {
 	background-color: #fff;
 }
 
-p {
+p, li {
 	color: #333;
 }
 
@@ -83,7 +83,7 @@ footer {
 		background-color: #222;
 	}
 
-	p {
+	p, li {
 		color: #ddd;
 	}
 

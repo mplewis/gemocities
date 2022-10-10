@@ -8,6 +8,10 @@
 => /another/path Some Link <script>with escaped content</script>
 => /some/other/path
 
+* Here is
+* an
+* unordered list (<ul>)!
+
 ```
 This is some test content
 It is preformatted
