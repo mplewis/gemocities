@@ -74,7 +74,7 @@ var _ = Describe("server", func() {
 	It("presents the home page", func() {
 		resp := rq.Request("/", nil)
 		Expect(resp.Status).To(Equal(gemini.StatusSuccess))
-		Expect(resp.Body()).To(ContainSubstring("This is the home page"))
+		Expect(resp.Body()).To(ContainSubstring("# Welcome to Gemocities"))
 	})
 
 	It("requires certs for the account page", func() {
