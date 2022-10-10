@@ -7,9 +7,10 @@ Gemocities is a free hosting service for your Gemini content. All you need is a 
 ## What's included?
 
 * 50 MB of free storage
-* WebDAV
+* WebDAV access to manage your content
+* A free https:// proxy for quickly linking to your content in a browser
 
-We do *not* support the following use cases:
+The following are not permitted on Gemocities:
 
 * Illegal content
 * Hateful content (transphobic, racist, etc.)
