@@ -21,6 +21,8 @@ It is preformatted
 This is not preformatted content and it is escaped:
 <script type="javascript">alert("uh-oh!");</script>
 
+> Here's a <blockquote>!
+
 ```
 This is another
 block of

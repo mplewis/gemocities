@@ -10,6 +10,7 @@ import (
 var mH = regexp.MustCompile(`^(#{1,3}) (.*)$`)
 var mLink = regexp.MustCompile(`^=>\s*(\S+)\s*(.*)$`)
 var mList = regexp.MustCompile(`^\*\s+(.*)$`)
+var mQuote = regexp.MustCompile(`^>\s+(.*)$`)
 
 const markPre = "```"
 
@@ -43,6 +44,8 @@ func process(chunks []TaggedChunk) string {
 			out += fmt.Sprintf("<p><pre>%s</pre></p>\n", html.EscapeString(chunk.Body))
 		case "list":
 			out += fmt.Sprintf("<li>%s</li>\n", html.EscapeString(chunk.Match[1]))
+		case "quote":
+			out += fmt.Sprintf("<p><blockquote>%s</blockquote></p>\n", html.EscapeString(chunk.Match[1]))
 		default:
 			out += fmt.Sprintf("<p>%s</p>\n", html.EscapeString(chunk.Body))
 		}
@@ -81,9 +84,12 @@ func ConvertToHTML(geminiBody string) string {
 			chunks = append(chunks, TaggedChunk{"list", c, m})
 			continue
 		}
+		if m := mQuote.FindStringSubmatch(c); m != nil {
+			chunks = append(chunks, TaggedChunk{"quote", c, m})
+			continue
+		}
 		chunks = append(chunks, TaggedChunk{"", c, nil})
 	}
-	// TODO: > Blockquote
 	// TODO: ``` can start a line without being alone
 
 	return process(chunks)

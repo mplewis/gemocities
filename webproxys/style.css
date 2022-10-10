@@ -21,6 +21,19 @@ a {
 	transition: 0.2s;
 }
 
+li {
+	margin-left: 16px;
+}
+
+blockquote {
+	border-left: 3px solid;
+	font-style: italic;
+	margin-left: 0;
+	padding-left: 16px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
 nav {
 	padding-bottom: 10px;
 }
@@ -52,8 +65,12 @@ body {
 	background-color: #fff;
 }
 
-p, li {
+p, li, blockquote {
 	color: #333;
+}
+
+blockquote {
+	border-color: #333;
 }
 
 h1,
@@ -83,8 +100,12 @@ footer {
 		background-color: #222;
 	}
 
-	p, li {
+	p, li, blockquote {
 		color: #ddd;
+	}
+
+	blockquote {
+		border-color: #ddd;
 	}
 
 	h1,
