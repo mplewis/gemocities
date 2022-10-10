@@ -1,6 +1,6 @@
 # Welcome to Gemocities
 
-Gemocities is a free hosting service for your Gemini content. All you need is a Gemini client and a working email address to get started:
+Gemocities is a free hosting service for your Gemini content. All you need is a Gemini client, a certificate identity, and a working email address to get started:
 
 => account » Sign in or sign up
 
