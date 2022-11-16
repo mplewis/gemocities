@@ -15,6 +15,10 @@ build:
 
 	SAVE ARTIFACT app AS LOCAL tmp/app
 
+test:
+	FROM +build
+	RUN go test ./...
+
 docker:
 	FROM busybox
 	WORKDIR /build
