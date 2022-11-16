@@ -53,12 +53,12 @@ func RequireUser(mgr *user.Manager, next router.RouteFunction) router.RouteFunct
 	}
 }
 
-func GetUserInfo(ctx context.Context) user.UserInfo {
-	return ctx.Value(UserInfoKey{}).(user.UserInfo)
+func GetUserInfo(ctx context.Context) user.Info {
+	return ctx.Value(UserInfoKey{}).(user.Info)
 }
 
-func GetUser(ctx context.Context) (user.User, user.UserInfo) {
-	info := ctx.Value(UserInfoKey{}).(user.UserInfo)
+func GetUser(ctx context.Context) (user.User, user.Info) {
+	info := ctx.Value(UserInfoKey{}).(user.Info)
 	u := ctx.Value(UserKey{}).(user.User)
 	return u, info
 }

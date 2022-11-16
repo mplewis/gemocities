@@ -18,6 +18,7 @@ import (
 // usernameMatcher extracts only valid usernames.
 var usernameMatcher = regexp.MustCompile(`^[A-Za-z0-9-_]+$`)
 
+//nolint:cyclop
 func AccountRegisterConfirm(
 	render Renderer,
 	umgr *user.Manager,

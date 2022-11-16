@@ -19,10 +19,12 @@ type User struct {
 }
 
 func (u *User) Serialize() ([]byte, error) {
+	//nolint:wrapcheck
 	return json.Marshal(u)
 }
 
 func (u *User) Deserialize(data []byte) error {
+	//nolint:wrapcheck
 	return json.Unmarshal(data, u)
 }
 

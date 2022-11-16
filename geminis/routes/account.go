@@ -16,7 +16,7 @@ func Account(render Renderer, umgr *user.Manager) router.RouteFunction {
 		if !info.HasUser {
 			tn = "register"
 		}
-		data := struct{ Info user.UserInfo }{Info: info}
+		data := struct{ Info user.Info }{Info: info}
 		render(w, tn, data)
 	})
 }

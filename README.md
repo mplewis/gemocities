@@ -2,9 +2,9 @@
 
 - [ ] document all methods
 - [x] configure Earthly
-- [ ] install linter
+- [x] install linter
 - [x] write tests
-- [ ] run ci
+- [x] run ci
 - [ ] deploy
 - [x] homepage design
 - [x] http proxy

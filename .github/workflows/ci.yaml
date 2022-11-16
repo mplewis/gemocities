@@ -29,6 +29,8 @@ jobs:
         run: earthly --version
       - name: Run tests
         run: earthly --ci +test
+      - name: Run linter
+        run: earthly --ci +lint
       - name: Push images
         run: earthly --ci --push +image
         if: startsWith(github.ref, 'refs/tags/v')

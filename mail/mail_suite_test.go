@@ -15,6 +15,7 @@ import (
 )
 
 func TestMail(t *testing.T) {
+	t.Parallel()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Mail Suite")
 }
@@ -63,7 +64,7 @@ var _ = Describe("Mailer", func() {
 		}
 
 		It("sends the expected mail", func() {
-			err := mailer.Send(mail.MailArgs{
+			err := mailer.Send(mail.Args{
 				From:     "welcome@amaya.com",
 				To:       []string{"lily@amaya.com"},
 				Subject:  "Reset your password",
@@ -107,7 +108,8 @@ var _ = Describe("Mailer", func() {
 
 		Describe("SendVerificationEmail", func() {
 			It("sends the expected email", func() {
-				err := mailer.SendVerificationEmail(user.User{Email: "lily@amaya.com", Name: "lily", VerificationToken: "deadbeefcafe"})
+				err := mailer.SendVerificationEmail(user.User{
+					Email: "lily@amaya.com", Name: "lily", VerificationToken: "deadbeefcafe"})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(sentMails).To(Equal([]SentMail{{
 					SMTPArgs: mail.SMTPArgs{Host: "mail.amaya.com", Port: 487, Username: "postmaster", Password: "qubits"},
@@ -118,6 +120,7 @@ var _ = Describe("Mailer", func() {
 							"Subject": []string{"Confirm your Gemocities account"},
 						},
 						MimeType: "text/plain",
+						//nolint:lll
 						Body: heredoc.Doc(`
 							Hello! Please follow this link to verify your email address for your new Gemocities account ~lily:
 

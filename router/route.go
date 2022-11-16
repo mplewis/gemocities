@@ -1,7 +1,7 @@
 package router
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ type RoutePart struct {
 	Splat   bool
 }
 
-func NewRoute(pattern string, fn RouteFunction) (Route, error) {
+func NewRoute(pattern string, fn RouteFunction) Route {
 	raws := strings.Split(strings.Trim(pattern, "/"), "/")
 	parts := []RoutePart{}
 	for _, raw := range raws {
@@ -34,26 +34,13 @@ func NewRoute(pattern string, fn RouteFunction) (Route, error) {
 	for i, part := range parts {
 		if part.Splat {
 			if i < len(parts)-1 {
-				return Route{}, errors.New("splat parts must be the last parts in the pattern")
+				panic(fmt.Sprintf("bad pattern: `%s`: splat parts must be the last parts in the pattern", pattern))
 			}
 			endsInSplat = true
 		}
 	}
 
-	route := Route{
-		parts:       parts,
-		handler:     fn,
-		endsInSplat: endsInSplat,
-	}
-	return route, nil
-}
-
-func NewMustRoute(pattern string, fn RouteFunction) Route {
-	route, err := NewRoute(pattern, fn)
-	if err != nil {
-		panic(err)
-	}
-	return route
+	return Route{parts: parts, handler: fn, endsInSplat: endsInSplat}
 }
 
 func (r Route) Match(path string) (map[string]string, bool) {

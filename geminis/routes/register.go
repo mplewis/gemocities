@@ -19,7 +19,8 @@ var unEmailMatcher = regexp.MustCompile(`^([A-Za-z0-9-_]+):([^@]+@[^.]+\..+)$`)
 
 func AccountRegister(render Renderer, umgr *user.Manager, cmgr *content.Manager) router.RouteFunction {
 	return middleware.RequireCert(umgr, func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
-		prompt := "Enter your desired username (a-z, 0-9, -, _) and email address, separated by a colon. Example: myusername:myemail@gmail.com"
+		prompt := "Enter your desired username (a-z, 0-9, -, _) and email address, separated by a colon. " +
+			"Example: myusername:myemail@gmail.com"
 		if rq.RawQuery == "" {
 			w.WriteHeader(gemini.StatusInput, prompt)
 			return
@@ -39,7 +40,8 @@ func AccountRegister(render Renderer, umgr *user.Manager, cmgr *content.Manager)
 			return
 		}
 		if exist {
-			w.WriteHeader(gemini.StatusInput, fmt.Sprintf("Sorry, the username \"%s\" is taken. Please pick another username.\n\n%s", username, prompt))
+			w.WriteHeader(gemini.StatusInput,
+				fmt.Sprintf("Sorry, the username \"%s\" is taken. Please pick another username.\n\n%s", username, prompt))
 			return
 		}
 		// TODO: Delete unverified accounts and directories

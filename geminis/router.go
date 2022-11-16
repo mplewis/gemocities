@@ -33,13 +33,13 @@ func buildRouter(umgr *user.Manager, cmgr *content.Manager, mailer mail.IMailer)
 	}
 
 	return router.NewRouter(
-		router.NewMustRoute("/", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
+		router.NewRoute("/", func(ctx context.Context, w gemini.ResponseWriter, rq router.Request) {
 			render(w, "home", nil)
 		}),
 
-		router.NewMustRoute("/account", routes.Account(render, umgr)),
-		router.NewMustRoute("/account/register", routes.AccountRegister(render, umgr, cmgr)),
-		router.NewMustRoute("/account/register/confirm", routes.AccountRegisterConfirm(render, umgr, cmgr, mailer)),
-		router.NewMustRoute("/account/verify", routes.AccountVerify(render, umgr)),
+		router.NewRoute("/account", routes.Account(render, umgr)),
+		router.NewRoute("/account/register", routes.AccountRegister(render, umgr, cmgr)),
+		router.NewRoute("/account/register/confirm", routes.AccountRegisterConfirm(render, umgr, cmgr, mailer)),
+		router.NewRoute("/account/verify", routes.AccountVerify(render, umgr)),
 	)
 }

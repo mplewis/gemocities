@@ -2,12 +2,14 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mplewis/ez3"
 )
 
 var ErrInvalidToken = errors.New("invalid token")
+var ErrUserAlreadyExists = errors.New("user already exists")
 
 type Manager struct {
 	Store    ez3.EZ3
@@ -27,13 +29,17 @@ func (m *Manager) Get(ch CertificateHash) (User, bool, error) {
 		return User{}, false, nil
 	}
 	if err != nil {
-		return User{}, false, err
+		return User{}, false, fmt.Errorf("error getting user for %s: %w", ch, err)
 	}
 	return *user, true, nil
 }
 
 func (m *Manager) Set(user User) error {
-	return m.Store.Set(string(user.CertificateHash), &user)
+	err := m.Store.Set(string(user.CertificateHash), &user)
+	if err != nil {
+		return fmt.Errorf("error setting user for %s: %w", user.CertificateHash, err)
+	}
+	return nil
 }
 
 func (m *Manager) Create(args NewArgs) (User, error) {
@@ -42,7 +48,7 @@ func (m *Manager) Create(args NewArgs) (User, error) {
 		return User{}, err
 	}
 	if found {
-		return User{}, errors.New("user already exists")
+		return User{}, ErrUserAlreadyExists
 	}
 	password, err := generatePassword()
 	if err != nil {
@@ -65,7 +71,11 @@ func (m *Manager) Create(args NewArgs) (User, error) {
 }
 
 func (m *Manager) Delete(ch CertificateHash) error {
-	return m.Store.Del(string(ch))
+	err := m.Store.Del(string(ch))
+	if err != nil {
+		return fmt.Errorf("error deleting user for %s: %w", ch, err)
+	}
+	return nil
 }
 
 func (m *Manager) ChangePassword(user User) error {

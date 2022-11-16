@@ -1,11 +1,12 @@
 package types
 
 type Config struct {
-	AppDomain      string `figyr:"required,description=The domain name where the app is hosted"`
-	GeminiHost     string `figyr:"default=:1965,description=The address to listen on for Gemini requests"`
-	WebDAVHost     string `figyr:"default=:8888,description=The address to listen on for WebDAV requests"`
-	HTTPHost       string `figyr:"default=:8080,description=The address to listen on for HTTP requests"`
-	ContentDir     string `figyr:"required,description=The directory on disk where user content is stored"`
+	AppDomain  string `figyr:"required,description=The domain name where the app is hosted"`
+	GeminiHost string `figyr:"default=:1965,description=The address to listen on for Gemini requests"`
+	WebDAVHost string `figyr:"default=:8888,description=The address to listen on for WebDAV requests"`
+	HTTPHost   string `figyr:"default=:8080,description=The address to listen on for HTTP requests"`
+	ContentDir string `figyr:"required,description=The directory on disk where user content is stored"`
+	//nolint:lll
 	GeminiCertsDir string `figyr:"required,description=The directory on disk where the server's Gemini certificates are stored"`
 
 	SMTPHost     string `figyr:"required,description=The hostname of the SMTP email server"`

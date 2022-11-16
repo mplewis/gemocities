@@ -41,7 +41,7 @@ func (m *Manager) Exists(username string) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error checking if user dir exists: %w", err)
 	}
 	if !stat.IsDir() {
 		return false, ErrNotADirectory
@@ -60,27 +60,35 @@ func (m *Manager) Create(username string) error {
 	}
 	err = os.Mkdir(m.UserDir(username), 0700)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating user dir for %s: %w", username, err)
 	}
 	data, err := templateFS.ReadFile(path.Join("templates", "index.gmi"))
 	if err != nil {
-		return err
+		return fmt.Errorf("error reading index template: %w", err)
 	}
 	err = os.WriteFile(path.Join(m.UserDir(username), "index.gmi"), data, 0600)
 	if err != nil {
-		return err
+		return fmt.Errorf("error writing index file for %s: %w", username, err)
 	}
 	return nil
 }
 
 // Rename renames a user directory.
 func (m *Manager) Rename(oldUsername string, newUsername string) error {
-	return os.Rename(m.UserDir(oldUsername), m.UserDir(newUsername))
+	err := os.Rename(m.UserDir(oldUsername), m.UserDir(newUsername))
+	if err != nil {
+		return fmt.Errorf("error renaming user dir: %w", err)
+	}
+	return nil
 }
 
 // Delete deletes a user directory.
 func (m *Manager) Delete(username string) error {
-	return os.RemoveAll(m.UserDir(username))
+	err := os.RemoveAll(m.UserDir(username))
+	if err != nil {
+		return fmt.Errorf("error deleting user dir: %w", err)
+	}
+	return nil
 }
 
 // WebDAVDirFor returns a webdav.Dir for a user directory.

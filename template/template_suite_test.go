@@ -2,7 +2,6 @@ package template_test
 
 import (
 	"embed"
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -15,11 +14,13 @@ import (
 var templates embed.FS
 
 func TestTemplate(t *testing.T) {
+	t.Parallel()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Template Suite")
 }
 
-func getAllFilenames(fs *embed.FS, path string) (out []string, err error) {
+func getAllFilenames(fs *embed.FS, path string) ([]string, error) {
+	out := []string{}
 	if len(path) == 0 {
 		path = "."
 	}
@@ -39,13 +40,11 @@ func getAllFilenames(fs *embed.FS, path string) (out []string, err error) {
 		}
 		out = append(out, fp)
 	}
-	return
+	return out, nil
 }
 
 var _ = Describe("Cache", func() {
 	It("works as intended", func() {
-		fmt.Println(getAllFilenames(&templates, ""))
-
 		c := &template.Cache{
 			FS:     &templates,
 			Prefix: "test/templates/",
