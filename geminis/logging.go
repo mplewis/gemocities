@@ -2,12 +2,13 @@ package geminis
 
 import (
 	"context"
+	"fmt"
 
 	"git.sr.ht/~adnano/go-gemini"
 	"github.com/rs/zerolog/log"
 )
 
-func LoggingMiddleware(h gemini.Handler) gemini.Handler {
+func LoggingMiddleware(h gemini.Handler) gemini.HandlerFunc {
 	return gemini.HandlerFunc(func(ctx context.Context, w gemini.ResponseWriter, r *gemini.Request) {
 		lw := &logResponseWriter{rw: w}
 		h.ServeGemini(ctx, lw, r)
@@ -44,7 +45,10 @@ func (w *logResponseWriter) Write(b []byte) (int, error) {
 	}
 	n, err := w.rw.Write(b)
 	w.Wrote += n
-	return n, err
+	if err != nil {
+		return n, fmt.Errorf("failed to write response: %w", err)
+	}
+	return n, nil
 }
 
 func (w *logResponseWriter) WriteHeader(status gemini.Status, meta string) {

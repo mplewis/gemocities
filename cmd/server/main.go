@@ -22,6 +22,8 @@ import (
 const shutdownTimeout = 30 * time.Second
 const desc = "Gemocities provides hosting for Gemini sites with a management interface and WebDAV file upload system."
 
+const readHeaderTimeout = 5 * time.Second
+
 func main() {
 	var cfg types.Config
 	figyr.New(desc).MustParse(&cfg)
@@ -52,13 +54,21 @@ func main() {
 	}()
 
 	davSrv := &webdavs.Server{Authorizer: umgr, ContentManager: cmgr, ContentDir: cfg.ContentDir}
-	davHttpSrv := &http.Server{Addr: cfg.WebDAVHost, Handler: davSrv}
+	davHTTPSrv := &http.Server{
+		Addr:              cfg.WebDAVHost,
+		Handler:           davSrv,
+		ReadHeaderTimeout: readHeaderTimeout,
+	}
 	go func() {
 		log.Info().Str("host", cfg.WebDAVHost).Msg("WebDAV server started")
-		errors <- davHttpSrv.ListenAndServe()
+		errors <- davHTTPSrv.ListenAndServe()
 	}()
 
-	proxySrv := &http.Server{Addr: cfg.HTTPHost, Handler: webproxys.Handler(cfg)}
+	proxySrv := &http.Server{
+		Addr:              cfg.HTTPHost,
+		Handler:           webproxys.Handler(cfg),
+		ReadHeaderTimeout: readHeaderTimeout,
+	}
 	go func() {
 		log.Info().Str("host", cfg.HTTPHost).Msg("HTTP proxy server started")
 		errors <- proxySrv.ListenAndServe()
@@ -70,7 +80,7 @@ func main() {
 	case <-exit:
 		gracefullyShutdownAll(map[string]Shutdownable{
 			"Gemini":     gemSrv,
-			"WebDAV":     davHttpSrv,
+			"WebDAV":     davHTTPSrv,
 			"HTTP proxy": proxySrv,
 		})
 	}

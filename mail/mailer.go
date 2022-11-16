@@ -1,6 +1,8 @@
 package mail
 
 import (
+	"fmt"
+
 	"github.com/mplewis/gemocities/template"
 	"github.com/mplewis/gemocities/types"
 	"github.com/rs/zerolog/log"
@@ -19,7 +21,7 @@ type Mailer struct {
 }
 
 // Send sends an email with the given content.
-func (m *Mailer) Send(args MailArgs) error {
+func (m *Mailer) Send(args Args) error {
 	content, err := args.render(m.Templates)
 	if err != nil {
 		return err
@@ -47,8 +49,8 @@ type SMTPArgs struct {
 	Password string
 }
 
-// MailArgs is the pre-rendered content of an email using a named template.
-type MailArgs struct {
+// Args is the pre-rendered content of an email using a named template.
+type Args struct {
 	From     string
 	To       []string
 	Subject  string
@@ -56,11 +58,11 @@ type MailArgs struct {
 	Data     any
 }
 
-// render renders a MailArgs into a Rendered mail which is ready to send.
-func (m *MailArgs) render(tc templateCache) (Rendered, error) {
+// render renders a Args into a Rendered mail which is ready to send.
+func (m *Args) render(tc templateCache) (Rendered, error) {
 	body, err := tc.RenderString(m.Template, m.Data)
 	if err != nil {
-		return Rendered{}, err
+		return Rendered{}, fmt.Errorf("error rendering template %s: %w", m.Template, err)
 	}
 	headers := map[string][]string{"From": []string{m.From}, "To": m.To, "Subject": []string{m.Subject}}
 	return Rendered{Headers: headers, MimeType: "text/plain", Body: body}, nil

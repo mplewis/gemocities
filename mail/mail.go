@@ -2,6 +2,7 @@ package mail
 
 import (
 	"embed"
+	"fmt"
 
 	"github.com/mplewis/gemocities/user"
 
@@ -24,5 +25,9 @@ var Send = func(s SMTPArgs, r Rendered) error {
 		msg.SetHeader(k, v...)
 	}
 	msg.SetBody(r.MimeType, r.Body)
-	return d.DialAndSend(msg)
+	err := d.DialAndSend(msg)
+	if err != nil {
+		return fmt.Errorf("error sending mail: %w", err)
+	}
+	return nil
 }

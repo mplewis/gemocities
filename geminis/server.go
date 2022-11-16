@@ -2,6 +2,7 @@ package geminis
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -26,7 +27,7 @@ func BuildServer(args ServerArgs) (*gemini.Server, error) {
 	certificates := &certificate.Store{}
 	certificates.Register("localhost")
 	if err := certificates.Load(args.GeminiCertsDir); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load certificates: %w", err)
 	}
 
 	fs := gemini.FileServer(os.DirFS(args.ContentDir))

@@ -21,7 +21,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Str("path", r.URL.Path).
 		Logger()
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		h := &webdav.Handler{
 			Prefix:     "/",
 			FileSystem: webdav.Dir("/dev/null"),

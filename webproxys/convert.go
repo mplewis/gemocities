@@ -20,6 +20,7 @@ type TaggedChunk struct {
 	Match []string
 }
 
+//nolint:cyclop
 func process(chunks []TaggedChunk) string {
 	out := ""
 	for _, chunk := range chunks {

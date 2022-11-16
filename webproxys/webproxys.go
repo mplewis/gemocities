@@ -1,7 +1,6 @@
 package webproxys
 
 import (
-	"context"
 	_ "embed"
 	"fmt"
 	"io"
@@ -56,7 +55,10 @@ func Handler(cfg types.Config) http.Handler {
 		orig := r.URL.Path
 		if orig == "/style.css" {
 			w.Header().Set("Content-Type", "text/css")
-			w.Write(styleCSS)
+			_, err := w.Write(styleCSS)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to write CSS")
+			}
 			return
 		}
 		if orig == "/favicon.ico" {
@@ -73,12 +75,13 @@ func Handler(cfg types.Config) http.Handler {
 			UserContent: strings.HasPrefix(orig, "/~"),
 		}
 
-		resp, err := gc.Get(context.Background(), url)
+		resp, err := gc.Get(r.Context(), url)
 		if err != nil {
 			log.Warn().Err(err).Msg("Failed to serve Gemini response")
 			data.Error = true
 			w.WriteHeader(http.StatusInternalServerError)
-			data.Content = "Sorry, we couldn't proxy the response from the Gemocities Gemini server. Please try loading this page in your Gemini client:"
+			data.Content = "Sorry, we couldn't proxy the response from the Gemocities Gemini server. " +
+				"Please try loading this page in your Gemini client:"
 			write(log, data)
 			return
 		}

@@ -19,6 +19,11 @@ test:
 	FROM +build
 	RUN go test ./...
 
+lint:
+	FROM +build
+	RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
+	RUN golangci-lint run
+
 image:
 	ARG EARTHLY_TARGET_TAG
 

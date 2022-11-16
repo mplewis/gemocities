@@ -18,6 +18,7 @@ var testIn string
 var testOut string
 
 func TestWebproxys(t *testing.T) {
+	t.Parallel()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "WebProxyS Suite")
 }

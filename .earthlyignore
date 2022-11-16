@@ -2,4 +2,8 @@ Earthfile
 .earthlyignore
 
 .git/
+.github/
+.vscode/
 tmp/
+
+*secret*

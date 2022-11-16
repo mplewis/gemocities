@@ -14,11 +14,6 @@ type Router struct {
 	routes []Route
 }
 
-type RouterMatch struct {
-	Router Router
-	Params Params
-}
-
 type Request struct {
 	Raw         *gemini.Request
 	PathParams  Params

@@ -26,7 +26,7 @@ func (c *Cache) load(name string) (*template.Template, error) {
 	path := fmt.Sprintf("%s%s%s", c.Prefix, name, c.Suffix)
 	tmpl, err := template.New(name).ParseFS(c.FS, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing template at %s: %w", path, err)
 	}
 	c.templates[name] = tmpl
 	return tmpl, nil
@@ -35,9 +35,13 @@ func (c *Cache) load(name string) (*template.Template, error) {
 func (c *Cache) Render(dst io.Writer, name string, data any) error {
 	tmpl, err := c.load(name)
 	if err != nil {
-		return err
+		return fmt.Errorf("error loading template %s: %w", name, err)
 	}
-	return tmpl.ExecuteTemplate(dst, name+c.Suffix, data)
+	err = tmpl.ExecuteTemplate(dst, name+c.Suffix, data)
+	if err != nil {
+		return fmt.Errorf("error executing template %s: %w", name, err)
+	}
+	return nil
 }
 
 func (c *Cache) RenderString(name string, data any) (string, error) {

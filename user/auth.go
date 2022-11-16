@@ -8,7 +8,7 @@ import (
 	"git.sr.ht/~adnano/go-gemini"
 )
 
-type UserInfo struct {
+type Info struct {
 	HasCertificate  bool
 	CertificateHash CertificateHash
 	HasUser         bool
@@ -44,8 +44,8 @@ func (m *Manager) AuthorizeWebDAVUser(r *http.Request) (bool, User, error) {
 	return true, user, nil
 }
 
-func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (UserInfo, error) {
-	info := UserInfo{}
+func (m *Manager) AuthorizeGeminiUser(r *gemini.Request) (Info, error) {
+	info := Info{}
 
 	cert := m.getCert(r)
 	if cert == nil {

@@ -17,6 +17,7 @@ import (
 )
 
 func TestGemocities(t *testing.T) {
+	t.Parallel()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gemocities Suite")
 }
@@ -31,9 +32,11 @@ type FakeMailer struct {
 	CrashWithError bool
 }
 
+var errSendEmailFailed = errors.New("sending email failed")
+
 func (f *FakeMailer) SendVerificationEmail(user user.User) error {
 	if f.CrashWithError {
-		return errors.New("sending email failed")
+		return errSendEmailFailed
 	}
 	f.SentMails = append(f.SentMails, SentMail{To: user.Email, Token: user.VerificationToken})
 	return nil
