@@ -19,11 +19,14 @@ test:
 	FROM +build
 	RUN go test ./...
 
-docker:
+image:
+	ARG EARTHLY_TARGET_TAG
+
 	FROM busybox
 	WORKDIR /build
 
 	COPY +build/app .
 	ENTRYPOINT ["/build/app"]
 
-	SAVE IMAGE mplewis/gemocities:latest
+	SAVE IMAGE --push mplewis/gemocities:latest
+	SAVE IMAGE --push mplewis/gemocities:$EARTHLY_TARGET_TAG
