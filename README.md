@@ -11,4 +11,3 @@
 - [ ] reset password email
 - [ ] delete account
 - [x] convert gemini to html
-- [ ] redirect `/~user/foo` to `/~user/foo.gmi` when exists
