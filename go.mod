@@ -48,7 +48,7 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0 // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
